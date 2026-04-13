@@ -1,0 +1,38 @@
+global:
+  scrape_interval:     15s      # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s      # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+# Attach these recording rules to the Prometheus server.
+rule_files:
+  - 'node_rules.yml'
+
+# Make Prometheus aware of the Alertmanager, which is responsible for handling alerts sent by Prometheus and taking appropriate actions based on the alerting rules defined in Prometheus.
+# If Alertmanager is down, Prometheus will keep trying to send alerts to it, but they will not be processed until Alertmanager is back up. 
+# This means that while Prometheus can still evaluate alerting rules and determine when an alert should be fired, the actual delivery of those alerts to the configured receivers (like email, Slack, etc.) will be delayed until Alertmanager is available again.
+# You can use the prometheus_notifications_errors_total metric to monitor the number of failed attempts to send notifications to Alertmanager, which can help you identify when Alertmanager is down or experiencing issues.
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ['localhost:9093']
+
+# A scrape configuration containing exactly one endpoint to scrape:
+scrape_configs:
+  # Here it's Prometheus itself.
+  # The job name is added as a label 'job=<job_name>' to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # A scrape configuration for nodes.
+  - job_name: 'node'
+
+    # Override the global default and scrape targets from this job every 10 seconds.
+    scrape_interval: 10s 
+    static_configs:
+      # Grouping targets by labels allows us to easily identify which targets belong to which group in the Prometheus UI and when querying metrics.
+      - targets: ['localhost:8081', 'localhost:8082']
+        labels:
+          group: 'production'
+      - targets: ['localhost:8083']
+        labels:
+          group: 'canary'

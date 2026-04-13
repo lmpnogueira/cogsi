@@ -1,0 +1,195 @@
+# --------------------------------------------------
+# Prometheus Unit Tests for Alerting Rules
+# --------------------------------------------------
+# Run with:
+#   promtool test rules node_rules_alerts_test.yml
+#
+# IMPORTANT CONCEPTS TO UNDERSTAND:
+#
+# 1. Alerts do NOT fire immediately:
+#    - Condition must be true for the entire 'for' duration
+#
+# 2. The 'for' timer starts ONLY when the expression becomes true
+#
+# 3. Range functions (e.g., rate(...[5m])) introduce a "warm-up period"
+#    - The expression is not reliable until enough data exists
+#
+# 4. Therefore:
+#    firing time ≈ warm-up + for
+#
+# 5. promtool is STRICT:
+#    - Labels must match exactly
+#    - Annotations must match exactly (after template rendering)
+# --------------------------------------------------
+
+# This test suite validates Alerting Rules from node_rules.yml
+rule_files:
+  - node_rules.yml
+
+# Set a short evaluation interval to speed up tests
+evaluation_interval: 1m
+
+# Define test cases
+tests:
+
+# ==================================================
+# TEST 1: ManyInstancesDown SHOULD FIRE
+# --------------------------------------------------
+# for: 2m → alert fires after 2 minutes
+# We evaluate at 4m to be safe
+# ==================================================
+- interval: 1m
+  input_series:
+    - series: 'up{job="node", instance="i1"}'
+      values: '1 1 1 1'
+    - series: 'up{job="node", instance="i2"}'
+      values: '1 0 0 0'
+    - series: 'up{job="node", instance="i3"}'
+      values: '1 0 0 0'
+
+  alert_rule_test:
+    - eval_time: 4m
+      alertname: ManyInstancesDown
+      exp_alerts:
+        - exp_labels:
+            alertname: ManyInstancesDown
+            job: node
+            severity: critical
+          exp_annotations:
+            summary: "Massive instance failure in job node"
+            description: "More than 50% of instances in the node cluster are down."
+
+
+# ==================================================
+# TEST 2: ManyInstancesDown SHOULD NOT FIRE
+# --------------------------------------------------
+# Availability = 2/3 = 0.66 (> 0.5)
+# Condition never becomes true → no alert
+# ==================================================
+- interval: 1m
+  input_series:
+    - series: 'up{job="node", instance="i1"}'
+      values: '1 1 1'
+    - series: 'up{job="node", instance="i2"}'
+      values: '1 1 1'
+    - series: 'up{job="node", instance="i3"}'
+      values: '0 0 0'
+
+  alert_rule_test:
+    - eval_time: 3m
+      alertname: ManyInstancesDown
+      exp_alerts: []
+
+
+# ==================================================
+# TEST 3: HighCpuUsage SHOULD FIRE
+# --------------------------------------------------
+# Expression uses: rate(...[5m])
+# → requires ~5 minutes of data (warm-up)
+#
+# Rule:
+#   for: 5m
+#
+# Timeline:
+#   0–5m   → rate stabilizes
+#   5–10m  → for countdown
+#   10m    → alert fires
+#
+# We evaluate at 11m to be safe
+#
+# Data:
+# - Slow increase in idle → CPU is busy → high usage
+# ==================================================
+- interval: 1m
+  input_series:
+    - series: 'node_cpu_seconds_total{instance="i1", mode="idle"}'
+      values: '0 1 2 3 4 5 6 7 8 9 10 11'
+
+  alert_rule_test:
+    - eval_time: 11m
+      alertname: HighCpuUsage
+      exp_alerts:
+        - exp_labels:
+            alertname: HighCpuUsage
+            instance: i1
+            severity: warning
+          exp_annotations:
+            summary: "High CPU usage on i1"
+            description: "CPU utilization has been above 80% for more than 5 minutes."
+
+
+# ==================================================
+# TEST 4: HighCpuUsage SHOULD NOT FIRE
+# --------------------------------------------------
+# Same warm-up applies, but CPU is mostly idle
+# → utilization < 0.8
+#
+# Even after warm-up + for, condition is false
+# ==================================================
+- interval: 1m
+  input_series:
+    - series: 'node_cpu_seconds_total{instance="i1", mode="idle"}'
+      values: '0 60 120 180 240 300 360 420 480 540 600 660'
+
+  alert_rule_test:
+    - eval_time: 11m
+      alertname: HighCpuUsage
+      exp_alerts: []
+
+
+# ==================================================
+# TEST 5: OutOfDiskSpace SHOULD FIRE
+# --------------------------------------------------
+# No warm-up (instant expression)
+# for: 10m → alert fires after 10 minutes
+#
+# We evaluate at 11m to avoid boundary issues
+#
+# Using promtool expansion notation:
+#  A+BxN  →  A, A+B, A+2B, ..., (N+1 values total)
+#
+# Here:
+#   100+0x11  → 12 samples, all equal to 100
+#   2000+0x11 → 12 samples, all equal to 2000
+#
+# IMPORTANT:
+# - Prometheus preserves labels → must include mountpoint
+# ==================================================
+- interval: 1m
+  input_series:
+    - series: 'node_filesystem_free_bytes{instance="i1", mountpoint="/"}'
+      values: '100+0x11'
+    - series: 'node_filesystem_size_bytes{instance="i1", mountpoint="/"}'
+      values: '2000+0x11'
+
+  alert_rule_test:
+    - eval_time: 11m
+      alertname: OutOfDiskSpace
+      exp_alerts:
+        - exp_labels:
+            alertname: OutOfDiskSpace
+            instance: i1
+            mountpoint: /
+            severity: critical
+          exp_annotations:
+            summary: "Disk space low on i1"
+            description: "Less than 10% free space remaining on the root partition."
+
+
+# ==================================================
+# TEST 6: OutOfDiskSpace SHOULD NOT FIRE
+# --------------------------------------------------
+# Free space = 25% (> 10%)
+# Condition never becomes true
+# ==================================================
+- interval: 1m
+  input_series:
+    - series: 'node_filesystem_free_bytes{instance="i1", mountpoint="/"}'
+      values: '500+0x11'
+    - series: 'node_filesystem_size_bytes{instance="i1", mountpoint="/"}'
+      values: '2000+0x11'
+
+  alert_rule_test:
+    - eval_time: 11m
+      alertname: OutOfDiskSpace
+      exp_alerts: []

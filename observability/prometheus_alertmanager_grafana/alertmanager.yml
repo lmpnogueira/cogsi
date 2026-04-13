@@ -1,0 +1,44 @@
+global:
+  # SMTP configuration for sending email notifications via Gmail's SMTP server
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'your-email@gmail.com'
+  smtp_auth_username: 'your-email@gmail.com'
+  smtp_auth_password: 'your-16-character-app-password'
+  smtp_require_tls: true
+
+  # --------------------------------------------------
+  # Gmail Setup Instructions:
+  #
+  # 1. You MUST enable 2-Step Verification on your Google account
+  #    https://myaccount.google.com/security
+  #
+  # 2. Generate an App Password:
+  #    - Go to: https://myaccount.google.com/apppasswords
+  #    - Select "Alertmanager" and your device
+  #    - Google will generate a 16-character password
+  #
+  # 3. Use that password in smtp_auth_password
+  #
+  # IMPORTANT:
+  # - Do NOT use your regular Gmail password
+  # - App passwords are required (Google blocks basic auth otherwise)
+  # --------------------------------------------------
+
+route:
+  # Group alerts with the same alertname into a single notification
+  group_by: ['alertname']
+
+  # Default receiver
+  receiver: 'email-notifications'
+
+receivers:
+- name: 'email-notifications'
+  email_configs:
+  - to: 'alerts-destination@example.com'
+
+    # Send a notification when the alert is resolved
+    send_resolved: true
+
+    # Optional: customize email subject
+    headers:
+      subject: "[PROMETHEUS] {{ .Status | toUpper }}: {{ .GroupLabels.alertname }}"

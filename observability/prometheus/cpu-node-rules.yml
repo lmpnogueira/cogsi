@@ -1,0 +1,18 @@
+# recording rules for cpu metrics on nodes
+groups:
+  - name: cpu-node
+    rules:
+      # average cpu seconds per mode, job and instance over 5 minutes
+      - record: job_instance_mode:node_cpu_seconds:avg_rate5m
+        expr: avg by (job, instance, mode) (rate(node_cpu_seconds_total[5m]))
+
+      # total cpu seconds per job and instance over 5 minutes
+      - record: job_instance:node_cpu_seconds:total_rate5m
+        expr: sum by (job, instance) (rate(node_cpu_seconds_total[5m]))
+
+      # cpu utilisation ratio per job and instance over 5 minutes
+      - record: job_instance:node_cpu_utilisation:ratio_rate5m
+        expr: |    
+          1 - avg by (job, instance) (  
+            rate(node_cpu_seconds_total{mode="idle"}[5m])
+          )

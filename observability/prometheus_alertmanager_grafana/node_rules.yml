@@ -1,0 +1,53 @@
+groups:
+  - name: node_rules
+    rules:
+      # --- RECORDING RULES ---
+      
+      # 1. Average availability per job
+      - record: job:up:avg
+        expr: avg without(instance)(up{job="node"})
+
+      # 2. CPU utilization per instance (already computed for performance)
+      - record: instance:node_cpu_utilization:ratio
+        expr: 1 - avg without(mode) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+      # 3. Memory utilization ratio
+      - record: instance:node_memory_utilization:ratio
+        expr: |
+          1 - (
+            (node_memory_available_bytes or node_memory_free_bytes) 
+            / 
+            (node_memory_total_bytes or node_memory_MemTotal_bytes)
+          )
+
+      # --- ALERTING RULES ---
+
+      # Alert 1: Service Availability
+      - alert: ManyInstancesDown
+        expr: job:up:avg{job="node"} < 0.5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Massive instance failure in job {{ $labels.job }}"
+          description: "More than 50% of instances in the {{ $labels.job }} cluster are down."
+
+      # Alert 2: CPU Saturation
+      - alert: HighCpuUsage
+        expr: instance:node_cpu_utilization:ratio > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU utilization has been above 80% for more than 5 minutes."
+
+      # Alert 3: Disk Space Exhaustion (Predictive)
+      - alert: OutOfDiskSpace
+        expr: node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space low on {{ $labels.instance }}"
+          description: "Less than 10% free space remaining on the root partition."

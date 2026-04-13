@@ -1,0 +1,29 @@
+global:
+  scrape_interval:     15s      # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s      # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+# Attach these recording rules to the Prometheus server.
+rule_files:
+  - 'cpu-node-rules.yml'
+
+# A scrape configuration containing exactly one endpoint to scrape:
+scrape_configs:
+  # Here it's Prometheus itself.
+  # The job name is added as a label 'job=<job_name>' to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # A scrape configuration for nodes.
+  - job_name: 'node'
+
+    # Override the global default and scrape targets from this job every 10 seconds.
+    scrape_interval: 10s 
+    static_configs:
+      # Grouping targets by labels allows us to easily identify which targets belong to which group in the Prometheus UI and when querying metrics.
+      - targets: ['localhost:8081', 'localhost:8082']
+        labels:
+          group: 'production'
+      - targets: ['localhost:8083']
+        labels:
+          group: 'canary'

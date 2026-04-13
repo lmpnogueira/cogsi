@@ -1,0 +1,116 @@
+{
+  "annotations": { "list": [ { "builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "name": "Annotations & Alerts", "type": "dashboard" } ] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "refresh": "15s",
+  "panels": [
+    {
+      "title": "Node Status History ({{job}})",
+      "type": "status-history",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { 
+          "expr": "up{job=~\"$job\", group=~\"$group\", instance=~\"$instance\"}", 
+          "legendFormat": "{{instance}}", 
+          "refId": "A",
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" }, "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "custom": { "lineWidth": 1, "fillOpacity": 70, "showValue": "never" }
+        }
+      },
+      "options": { "showValue": "never", "rowHeight": 0.9, "colWidth": 0.9 }
+    },
+    {
+      "title": "CPU Usage: $instance",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "instance:node_cpu_utilization:ratio{instance=~\"$instance\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "custom": { "drawStyle": "line", "fillOpacity": 15 } }
+      }
+    },
+    {
+      "title": "Memory Usage: $instance",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "instance:node_memory_utilization:ratio{instance=~\"$instance\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0, "max": 1,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.8 }] }
+        }
+      }
+    },
+    {
+      "title": "Disk Space per Selected Instance",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "node_filesystem_free_bytes{instance=~\"$instance\", mountpoint=\"/\"} / node_filesystem_size_bytes{instance=~\"$instance\", mountpoint=\"/\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0.2 }] } }
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "job",
+        "label": "Job",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(up, job)",
+        "query": { "query": "label_values(up, job)", "refId": "PrometheusVariableQuery" },
+        "includeAll": true,
+        "multi": true,
+        "refresh": 1
+      },
+      {
+        "name": "group",
+        "label": "Group",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(up{job=~\"$job\"}, group)",
+        "query": { "query": "label_values(up{job=~\"$job\"}, group)", "refId": "PrometheusVariableQuery" },
+        "includeAll": true,
+        "multi": true,
+        "refresh": 1
+      },
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(up{job=~\"$job\", group=~\"$group\"}, instance)",
+        "query": { "query": "label_values(up{job=~\"$job\", group=~\"$group\"}, instance)", "refId": "PrometheusVariableQuery" },
+        "includeAll": true,
+        "multi": true,
+        "refresh": 1
+      }
+    ]
+  },
+  "title": "Dynamic Dashboard",
+  "uid": "dynamic_prom_002"
+}
