@@ -1,16 +1,65 @@
-# Compiled class file
+# =========================================================
+# OS / Editor
+# =========================================================
+.DS_Store
+**/.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.project
+.classpath
+.settings/
+*.iml
+
+# =========================================================
+# Java / JVM
+# =========================================================
+# Compiled class files
 *.class
 
-# Log file
+# Logs
 *.log
 
-# BlueJ files
+# BlueJ
 *.ctxt
 
-# Mobile Tools for Java (J2ME)
+# Mobile Tools for Java
 .mtj.tmp/
 
-# Package Files #
+# Crash logs
+hs_err_pid*
+replay_pid*
+
+# =========================================================
+# Build Artifacts (Maven / Gradle)
+# =========================================================
+# Maven
+target/
+
+# Gradle
+.gradle/
+build/
+out/
+
+# Keep wrappers
+!mvnw
+!mvnw.cmd
+!.mvn/
+!.mvn/wrapper/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+!gradlew
+!gradlew.bat
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Packaged artifacts
 *.jar
 *.war
 *.nar
@@ -19,10 +68,118 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# =========================================================
+# Test / Coverage / Reports
+# =========================================================
+coverage/
+.coverage
+jacoco.exec
+.jacoco/
+surefire-reports/
+failsafe-reports/
+test-output/
+reports/
 
-.DS_Store
-**/.DS_Store
-Thumbs.db
+# =========================================================
+# Environment / Secrets
+# =========================================================
+.env
+.env.*
+*.env
+*.local
+*.secret
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# =========================================================
+# Vagrant
+# =========================================================
+.vagrant/
+*.box
+.vagrant.d/
+# Keep Vagrantfile
+!Vagrantfile
+
+# =========================================================
+# Docker / Compose
+# =========================================================
+docker-data/
+docker-volumes/
+*.pid
+*.cid
+*.tar
+*.img
+# Override/local-only compose files
+docker-compose.override.yml
+compose.override.yaml
+# Keep main definitions
+!Dockerfile
+!docker-compose.yml
+!compose.yaml
+
+# =========================================================
+# Ansible
+# =========================================================
+*.retry
+ansible.log
+*.vault
+# Local inventories if environment-specific
+inventory.local
+hosts.local
+# Keep standard project files
+!ansible.cfg
+
+# =========================================================
+# Jenkins
+# =========================================================
+.jenkins/
+jenkins_home/
+jobs/
+workspace/
+builds/
+updates/
+plugins/
+secrets/
+nodes/
+users/
+# Keep pipeline definitions
+!Jenkinsfile
+
+# =========================================================
+# Prometheus
+# =========================================================
+prometheus_data/
+*.prom
+# Keep configuration
+!prometheus.yml
+
+# =========================================================
+# Grafana
+# =========================================================
+grafana_data/
+grafana.db
+plugins/
+# Keep dashboards/provisioning as code
+!grafana/
+!grafana/dashboards/
+!grafana/provisioning/
+
+# =========================================================
+# Alertmanager
+# =========================================================
+alertmanager_data/
+nflog*
+silences*
+# Keep config
+!alertmanager.yml
+
+# =========================================================
+# Miscellaneous
+# =========================================================
+.cache/
+*.bak
+*.old
