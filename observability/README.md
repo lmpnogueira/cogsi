@@ -1,20 +1,23 @@
 # Module: Observability 
 
+In modern DevOps, deploying applications alone is not enough. Systems must be continuously observed through reliable, repeatable, and actionable monitoring to transform raw operational data into visibility, resilience, and informed decision-making.
+
 This directory contains the configuration files and dashboards required for the Observability module. The content is divided into two distinct stages to help you understand the evolution from simple data collection to a professional monitoring stack.
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ### 1. `/prometheus`
-**Used in: Lecture 1 and 2 (Introduction to Metrics)**
+**Used in week 1**
 This folder focuses exclusively on **Prometheus** and **Node Exporters**. 
 - **Goal:** Understand how Prometheus scrapes metrics and how to write basic PromQL queries, and how to define Recording Rules.
-- **Key Files:** - `prometheus.yml`: Main configuration for the scraper.
+- **Key Files:** 
+    - `prometheus.yml`: Main configuration for the scraper.
     - `cpu-node-rules.yml`: Contains the basic recording rules.
 
 ### 2. `/prometheus_alertmanager_grafana`
-**Used in: Lecture 2 (The Full Stack)**
+**Used in week 2**
 This folder explores the integration of the three core tools: **Prometheus**, **Alertmanager**, and **Grafana**.
 - **Goal:** Build a complete end-to-end pipeline where metrics are collected, alerts are routed, and data is visualized.
 - **Key Files:**
@@ -24,7 +27,7 @@ This folder explores the integration of the three core tools: **Prometheus**, **
 
 ---
 
-## 📊 Grafana Dashboards
+## Grafana Dashboards
 
 Inside the second folder, you will find `.json` files for the Grafana dashboards. You can import these directly into your Grafana instance:
 
@@ -39,7 +42,7 @@ Inside the second folder, you will find `.json` files for the Grafana dashboards
 
 ---
 
-## 🛠 Prerequisites
+## Prerequisites
 - **Node Exporter**: Ensure it is running on your target machines (Linux or macOS).
 - **Prometheus**: Installed and configured to read from the provided `.yml` files.
 - **Alertmanager**: Installed and configured to read from the provided `.yml` files.
