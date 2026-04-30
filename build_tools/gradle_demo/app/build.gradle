@@ -1,0 +1,114 @@
+// This is the build configuration for the chat server application.
+// It defines the plugins, dependencies, and tasks needed to build and run the application.
+
+// Apply the application plugin to add support for building a Java application
+plugins {
+    id 'application'
+}
+
+ // Use Maven Central for resolving dependencies.
+repositories {
+    mavenCentral()
+}
+
+// Declare the dependencies for the application.
+dependencies {
+    implementation      libs.log4j.api
+    implementation      libs.log4j.core
+}
+
+// Set the version of the application, using a property from gradle.properties or defaulting to 'unspecified'.
+version = project.findProperty('appVersion') ?: 'unspecified'
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// Configure the application plugin with the main class of the application.
+application {
+    mainClass = 'org.example.App'
+}
+
+// Generate a thin JAR that includes the application classes and resources, but not the dependencies (the default).
+tasks.named('jar') {
+    archiveBaseName = 'chat-server'
+    archiveVersion = '1.0'
+    archiveClassifier = ''
+
+    doLast {
+        println("Generated application JAR: ${archiveFile.get().asFile.name}")
+    }
+}
+
+// Custom task to copy runtime dependencies into a separate directory for easier packaging
+tasks.register('copyDependencies', Copy) {
+    group = 'build'
+    description = 'Copies runtime dependencies into build/libs/lib'
+
+    from(configurations.runtimeClasspath)
+    into(layout.buildDirectory.dir('libs/lib'))
+}
+
+// Custom task to package the application JAR along with its dependencies into a single directory
+tasks.register('packageApp') {
+    group = 'build'
+    description = 'Builds the JAR and copies runtime dependencies'
+
+    dependsOn(tasks.named('jar'))
+    dependsOn(tasks.named('copyDependencies'))
+}
+
+// Custom task to capture and display project information at runtime, ensuring values are captured at configuration time for safety.
+tasks.register('printProjectInfo') {
+    group = 'Help'
+    description = 'Displays basic project and build information'
+
+    // Capture values at configuration time to avoid issues with configuration cache
+    def projectName = project.name
+    def projectVersion = project.version
+    def gradleVersion = gradle.gradleVersion
+    def toolchainVersion = java.toolchain.languageVersion.get()
+    def buildDir = layout.buildDirectory.get().asFile
+
+    doLast {
+        println "=============================="
+        println "Project Name: $projectName"
+        println "Project Version: $projectVersion"
+        println "Gradle Version: $gradleVersion"
+        println "Java Toolchain Version: $toolchainVersion"
+        println "Build Directory: $buildDir"
+        println "=============================="
+    }
+}
+
+
+// Custom task to clean up log files generated during the build process.
+tasks.register('cleanLogs', Delete) {
+    group = 'Build'
+    description = 'Deletes log files from the build directory'
+
+    delete fileTree(dir: layout.buildDirectory, include: '**/*.log')
+}
+
+// Custom task to run the chat client application, allowing configuration of server IP and port via Gradle properties.
+tasks.register('runClient', JavaExec) {
+    group = "DevOps"
+    description = "Launches a chat client that connects to a chat server"
+  
+    classpath = sourceSets.main.runtimeClasspath
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('org.example.ChatClientApp')
+
+    def serverIP = providers.gradleProperty('serverIP').orElse('localhost')
+    def serverPort = providers.gradleProperty('serverPort').orElse('59001')
+
+    args(serverIP.get(), serverPort.get())
+
+    doFirst {
+        println("Starting ChatClientApp with server IP: ${serverIP.get()} and port: ${serverPort.get()}")
+    }
+}
