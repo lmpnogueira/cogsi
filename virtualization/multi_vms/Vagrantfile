@@ -1,0 +1,158 @@
+# =============================================================================
+# Vagrantfile — COGSI / Virtualization Part II
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates multi-machine Vagrant environments and Lecture II topics:
+#   - Multiple VM definitions
+#   - Box version pinning
+#   - Global vs machine-specific provisioning
+#   - Private networking
+#   - Forwarded ports
+#   - Inter-VM communication
+#   - Startup ordering considerations
+#   - Named provisioners
+#   - Targeted provisioning (--provision-with)
+#   - Custom synced folders
+#   - /etc/hosts provisioning
+#
+# Example topology:
+#   web  -> nginx
+#   db   -> placeholder database node
+#
+# Suggested directory structure:
+#   .
+#   ├── Vagrantfile
+#   ├── provisioning/
+#   │   └── base.sh
+#   │   └── web.sh
+#   │   └── db.sh
+#   ├── shared/
+#   └── shared_webapp/
+#
+# NOTE: 
+#  If using the VMware provider, ensure the static IPs are adjusted to match
+#  your host's specific vmnet subnet to avoid network initialization failures
+# =============================================================================
+
+# ===========================================================================
+# USEFUL COMMANDS
+# ---------------------------------------------------------------------------
+# vagrant up
+# vagrant up web
+# vagrant up db
+# vagrant up --no-parallel
+# vagrant ssh web
+# vagrant ssh db
+# vagrant status
+#
+# Global provisioner:
+# vagrant provision --provision-with base_packages
+#
+# Machine-specific:
+# vagrant provision web --provision-with web_setup
+# vagrant provision db --provision-with db_setup
+# ===========================================================================
+
+Vagrant.configure("2") do |config|
+
+  # ===========================================================================
+  # GLOBAL SETTINGS
+  # ===========================================================================
+  config.vm.box = "bento/ubuntu-24.04"
+
+  # Pin the box version for reproducibility across teams
+  config.vm.box_version = "202510.26.0"
+
+  # Disable default synced folder to encourage explicit design
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Ensure ./shared exists in the project directory before running `vagrant up`.
+  config.vm.synced_folder "./shared", "/shared"
+
+
+  # Default provider configuration for all machines
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus = 2
+    vb.gui = false
+  end
+
+  # ===========================================================================
+  # GLOBAL PROVISIONING
+  # ---------------------------------------------------------------------------
+  # Runs on ALL machines unless specifically excluded
+  # Demonstrates reusable shared configuration
+  # ===========================================================================
+  config.vm.provision "shell",
+    name: "base_packages",
+    path: "provisioning/base.sh"
+
+  # ===========================================================================
+  # WEB MACHINE
+  # ===========================================================================
+  config.vm.define "web", primary: true do |web|
+
+    web.vm.hostname = "web"
+
+    # Private network for internal communication
+    web.vm.network "private_network", ip: "192.168.56.10"
+
+    # Access web service from host browser
+    web.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true
+
+    # Machine-specific synced folder
+    # Ensure ./shared_webapp exists in the project directory before running `vagrant up`
+    web.vm.synced_folder "./shared_webapp", "/webapp"
+    
+    # -------------------------------------------------------------------------
+    # Web-specific setup
+    # -------------------------------------------------------------------------
+    web.vm.provision "shell",
+      name: "web_setup",
+      path: "provisioning/web.sh"
+
+    # -------------------------------------------------------------------------
+    # Simple hostname resolution
+    # -------------------------------------------------------------------------
+    web.vm.provision "shell",
+      name: "hosts_config",
+      inline: <<-SHELL
+        if ! grep -q "192.168.56.11 db" /etc/hosts; then
+          echo "192.168.56.11 db" | sudo tee -a /etc/hosts
+        fi
+      SHELL
+  end
+
+  # ===========================================================================
+  # DATABASE MACHINE
+  # ===========================================================================
+  config.vm.define "db" do |db|
+
+    db.vm.hostname = "db"
+
+    # Private network for internal communication
+    db.vm.network "private_network", ip: "192.168.56.11"
+
+    # Optional DB access from host
+    db.vm.network "forwarded_port", guest: 3306, host: 33060, auto_correct: true
+
+    # -------------------------------------------------------------------------
+    # Database-specific setup
+    # -------------------------------------------------------------------------
+    db.vm.provision "shell",
+      name: "db_setup",
+      path: "provisioning/db.sh"
+
+    # -------------------------------------------------------------------------
+    # Simple hostname resolution
+    # -------------------------------------------------------------------------
+    db.vm.provision "shell",
+      name: "hosts_config",
+      inline: <<-SHELL
+        if ! grep -q "192.168.56.10 web" /etc/hosts; then
+          echo "192.168.56.10 web" | sudo tee -a /etc/hosts
+        fi
+      SHELL
+  end
+
+end

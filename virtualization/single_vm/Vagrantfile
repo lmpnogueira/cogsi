@@ -1,0 +1,142 @@
+# =============================================================================
+# Vagrantfile — COGSI / Virtualization Part I
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates the core concepts from Lecture 1:
+#   - Box selection
+#   - Provider compatibility
+#   - Synced folders
+#   - Shell provisioning
+#   - Idempotence
+#   - Port forwarding
+#   - Private networking
+#   - Environment variables
+#   - Provider-specific customization
+#
+# Notes:
+#   - Designed for BOTH VirtualBox and VMware Desktop
+#   - Designed for BOTH amd64 (Intel/AMD) and arm64 (Apple Silicon)
+#   - Uses Ubuntu 24.04 boxes from Bento, which provide broad compatibility
+#   - This file is intentionally modular to support future exercises
+#
+# Suggested directory structure:
+#   .
+#   ├── Vagrantfile
+#   ├── provisioning/
+#   │   └── bootstrap.sh
+#   └── shared/
+#
+# IMPORTANT:
+#   Add `.vagrant/` to `.gitignore`
+# =============================================================================
+
+Vagrant.configure("2") do |config|
+
+  # ===========================================================================
+  # BOX SELECTION
+  # ---------------------------------------------------------------------------
+  # We dynamically choose a box based on the host CPU architecture.
+  # This improves portability for mixed teams using:
+  #   - Intel/AMD laptops
+  #   - Apple Silicon Macs
+  #
+  # Bento naming:
+  #   amd64  -> bento/ubuntu-24.04
+  #   arm64  -> bento/ubuntu-24.04-arm64
+  # ===========================================================================
+
+  host_arch = RUBY_PLATFORM.include?("arm64") || RUBY_PLATFORM.include?("aarch64") ? "arm64" : "amd64"
+
+  config.vm.box =
+    if host_arch == "arm64"
+      "bento/ubuntu-24.04-arm64"
+    else
+      "bento/ubuntu-24.04"
+    end
+
+  # Optional: lock to a known version for reproducibility
+  # config.vm.box_version = "..."
+
+  # ===========================================================================
+  # MACHINE IDENTITY
+  # ===========================================================================
+  config.vm.hostname = "cogsi-vm"
+
+  # ===========================================================================
+  # SYNCED FOLDERS
+  # ---------------------------------------------------------------------------
+  # By default, Vagrant syncs the project folder to /vagrant.
+  # Here we demonstrate a custom synced folder instead.
+  # Ensure ./shared exists in the project directory before running `vagrant up`.
+  # ===========================================================================
+  config.vm.synced_folder "./shared", "/shared"
+
+  # ===========================================================================
+  # NETWORKING
+  # ---------------------------------------------------------------------------
+  # Port forwarding:
+  # Host: 8080 -> Guest: 80
+  # Useful for testing web services inside the VM.
+  # ===========================================================================
+  config.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true
+
+  # ---------------------------------------------------------------------------
+  # Private network (DHCP)
+  # Good default for development.
+  # Can later be changed to static IP in exercises.
+  # ---------------------------------------------------------------------------
+  config.vm.network "private_network", type: "dhcp"
+
+  # ===========================================================================
+  # ENVIRONMENT VARIABLES
+  # ---------------------------------------------------------------------------
+  # Demonstrates host-driven customization without modifying the Vagrantfile.
+  #
+  # Example:
+  #   export INSTALL_NGINX=true
+  #   export VM_MEMORY=4096
+  #   vagrant up
+  # ===========================================================================
+  install_nginx = ENV["INSTALL_NGINX"] || "false"
+  vm_memory     = ENV["VM_MEMORY"] || "2048"
+  vm_cpus       = ENV["VM_CPUS"] || "2"
+
+  # ===========================================================================
+  # PROVIDER-SPECIFIC SETTINGS
+  # ---------------------------------------------------------------------------
+  # VirtualBox
+  # ===========================================================================
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "COGSI-Virtualization"
+    vb.memory = vm_memory
+    vb.cpus = vm_cpus
+    vb.gui = false
+  end
+
+  # ---------------------------------------------------------------------------
+  # VMware Desktop (Fusion / Workstation)
+  # ===========================================================================
+  config.vm.provider "vmware_desktop" do |vmware|
+    vmware.vmx["memsize"] = vm_memory
+    vmware.vmx["numvcpus"] = vm_cpus
+  end
+
+  # ===========================================================================
+  # PROVISIONING
+  # ---------------------------------------------------------------------------
+  # External script preferred over inline shell for:
+  #   - Reusability
+  #   - Clarity
+  #   - Future Ansible migration
+  #
+  # Demonstrates:
+  #   - Package installation
+  #   - Idempotence
+  #   - Environment variable passing
+  # ===========================================================================
+  config.vm.provision "shell",
+    path: "provisioning/bootstrap.sh",
+    env: {
+      "INSTALL_NGINX" => install_nginx
+    }
+end
