@@ -10,10 +10,9 @@ This directory contains the projects, build configurations, and supporting files
 
 ### 1. `/gradle_demo`
 
-**Used in week 1**
-This project focuses exclusively on Gradle fundamentals using a simple Java application.
+**Used in week 1.** This project focuses exclusively on Gradle fundamentals using a simple Java application.
 
--**Goal:** Understand the purpose of build tools, how Gradle structures and automates the build lifecycle, how to use the Gradle Wrapper, and how to execute core tasks such as compiling, testing, packaging, and running an application.
+- **Goal:** Understand the purpose of build tools, how Gradle structures and automates the build lifecycle, how to use the Gradle Wrapper, and how to execute core tasks such as compiling, testing, packaging, and running an application.
 - **Key Files:**
     - `build.gradle`: Main build configuration file using Groovy DSL, defining plugins, dependencies, and tasks.
     - `settings.gradle`: Defines the project name and build identity.

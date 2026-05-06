@@ -9,16 +9,18 @@ This directory contains the configuration files and dashboards required for the 
 ## Repository Structure
 
 ### 1. `/prometheus`
-**Used in week 1**
-This folder focuses exclusively on **Prometheus** and **Node Exporters**. 
+
+**Used in week 1.** This folder focuses exclusively on **Prometheus** and **Node Exporters**.
+
 - **Goal:** Understand how Prometheus scrapes metrics and how to write basic PromQL queries, and how to define Recording Rules.
 - **Key Files:** 
     - `prometheus.yml`: Main configuration for the scraper.
     - `cpu-node-rules.yml`: Contains the basic recording rules.
 
 ### 2. `/prometheus_alertmanager_grafana`
-**Used in week 2**
-This folder explores the integration of the three core tools: **Prometheus**, **Alertmanager**, and **Grafana**.
+
+**Used in week 2.** This folder explores the integration of the three core tools: **Prometheus**, **Alertmanager**, and **Grafana**.
+
 - **Goal:** Build a complete end-to-end pipeline where metrics are collected, alerts are routed, and data is visualized.
 - **Key Files:**
     - Integrated configuration for all three services.
