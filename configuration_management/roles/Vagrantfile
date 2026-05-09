@@ -10,7 +10,7 @@
 # Suggested directory structure:
 #   .
 #   ├── Vagrantfile
-#   ├── playbook.yml
+#   ├── site.yml
 #   └── roles/
 #       └── webserver/
 #           ├── tasks/

@@ -16,7 +16,7 @@
 # Suggested directory structure:
 #   .
 #   ├── Vagrantfile
-#   ├── playbook.yml
+#   ├── site.yml
 #   └── templates/          # Optional for future template evolution
 #
 # NOTE:
@@ -33,8 +33,8 @@
 # vagrant reload --provision
 # vagrant ssh
 # curl http://localhost:8080
-# ansible-playbook --syntax-check playbook.yml
-# ansible-playbook -C playbook.yml
+# ansible-playbook --syntax-check site.yml
+# ansible-playbook -C site.yml
 # ===========================================================================
 
 Vagrant.configure("2") do |config|

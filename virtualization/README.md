@@ -8,7 +8,7 @@ This directory contains the configuration files, examples, and practical resourc
 
 ## Repository Structure
 
-### 1. `/single_vm`
+### 1. `single_vm/`
 
 **Used in week 1.** This folder focuses exclusively on single-machine virtualization with Vagrant.
 
@@ -18,7 +18,7 @@ This directory contains the configuration files, examples, and practical resourc
     - `bootstrap.sh`: Basic provisioning script for automated setup.
     - Troubleshooting and debugging support materials.
 
-### 2. `/multi_vms`
+### 2. `multi_vms/`
 
 **Used in week 2.** This folder explores multi-machine Vagrant environments and secure infrastructure design.
 

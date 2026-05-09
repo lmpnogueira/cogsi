@@ -8,7 +8,7 @@ This directory contains the projects, build configurations, and supporting files
 
 ## Repository Structure
 
-### 1. `/gradle_demo`
+### 1. `gradle_demo/`
 
 **Used in week 1.** This project focuses exclusively on Gradle fundamentals using a simple Java application.
 

@@ -8,7 +8,7 @@ This directory contains the configuration files and dashboards required for the 
 
 ## Repository Structure
 
-### 1. `/prometheus`
+### 1. `prometheus/`
 
 **Used in week 1.** This folder focuses exclusively on **Prometheus** and **Node Exporters**.
 
@@ -17,7 +17,7 @@ This directory contains the configuration files and dashboards required for the 
     - `prometheus.yml`: Main configuration for the scraper.
     - `cpu-node-rules.yml`: Contains the basic recording rules.
 
-### 2. `/prometheus_alertmanager_grafana`
+### 2. `prometheus_alertmanager_grafana/`
 
 **Used in week 2.** This folder explores the integration of the three core tools: **Prometheus**, **Alertmanager**, and **Grafana**.
 
