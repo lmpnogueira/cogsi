@@ -1,0 +1,61 @@
+# =============================================================================
+# Vagrantfile — COGSI / Configuration Management with Ansible
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates single-machine Vagrant provisioning integrated with Ansible
+#   and the core topics of this lecture:
+#   - Vagrant + Ansible integration
+#   - Infrastructure as Code (VM definition)
+#   - Configuration Management (Ansible playbook)
+#   - Single VM definition
+#   - Automatic dynamic inventory generation by Vagrant
+#   - Ansible playbook execution during provisioning
+#   - Idempotent provisioning workflows
+#   - Variable-driven configuration
+#
+# Suggested directory structure:
+#   .
+#   ├── Vagrantfile
+#   ├── playbook.yml
+#   └── templates/          # Optional for future template evolution
+#
+# NOTE:
+#   Vagrant automatically generates the Ansible inventory for the VM,
+#   so no static inventory file is required for this example.
+# =============================================================================
+
+
+# ===========================================================================
+# USEFUL COMMANDS
+# ---------------------------------------------------------------------------
+# vagrant up
+# vagrant provision
+# vagrant reload --provision
+# vagrant ssh
+# curl http://localhost:8080
+# ansible-playbook --syntax-check playbook.yml
+# ansible-playbook -C playbook.yml
+# ===========================================================================
+
+Vagrant.configure("2") do |config|
+  # Base VM
+  config.vm.box = "bento/ubuntu-22.04"
+
+  # Optional private network
+  config.vm.network "private_network", type: "dhcp"
+
+  # Forward nginx HTTP port
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Ansible provisioning
+  config.vm.provision "ansible" do |ansible|
+    # playbook file
+    ansible.playbook = "site.yml"
+
+    # compatibility_mode is required for Ansible 2.0+ to work with Vagrant's Ansible provisioner
+    ansible.compatibility_mode = "2.0"
+
+    # Optional verbosity for troubleshooting
+    # ansible.verbose = "v"
+  end
+end

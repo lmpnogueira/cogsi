@@ -1,0 +1,47 @@
+---
+# =============================================================================
+# tasks/main.yml — Main tasks for the webserver role
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Implements the configuration logic for:
+#   - Package updates
+#   - JDK installation
+#   - Nginx installation
+#   - Template deployment
+#   - Service management
+#
+# Best practice:
+#   Tasks should be idempotent and trigger handlers only when changes occur.
+# =============================================================================
+
+- name: Update apt package index
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install JDK
+  become: true
+  package:
+    name: "{{ java_package }}"
+    state: present
+
+- name: Install nginx
+  become: true
+  package:
+    name: "{{ web_package }}"
+    state: present
+
+- name: Deploy custom homepage template
+  become: true
+  template:
+    src: index.html.j2
+    dest: "{{ web_root }}/index.html"
+  notify: restart nginx
+
+- name: Ensure nginx service is running
+  become: true
+  service:
+    name: "{{ web_service }}"
+    state: started
+    enabled: true

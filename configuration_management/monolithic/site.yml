@@ -1,0 +1,100 @@
+---
+# =============================================================================
+# playbook.yml — COGSI / Configuration Management with Ansible
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates the core concepts of Ansible through the provisioning of a
+#   single VM created by Vagrant.
+#
+# Lecture topics covered:
+#   - Playbook structure
+#   - Plays, tasks, and handlers
+#   - YAML syntax
+#   - Variables (vars)
+#   - Modules:
+#       * apt
+#       * package
+#       * copy
+#       * service
+#   - Privilege escalation (become)
+#   - Idempotence
+#   - Service management
+#   - Variable substitution
+#   - Event-driven configuration with notify/handlers
+#
+# Provisioning goals:
+#   - Update package metadata
+#   - Install JDK
+#   - Install Nginx
+#   - Deploy a custom web page
+#   - Ensure the web service is enabled and running
+#
+# NOTE:
+#   This playbook intentionally keeps all tasks in a single file for teaching
+#   simplicity. More advanced projects should separate responsibilities into
+#   roles, templates, and external task files.
+#
+#   Re-running this playbook should produce the same final system state
+#   without unnecessary changes (idempotence).
+# =============================================================================
+
+  - name: Provision VM
+    hosts: all
+    become_method: sudo
+  
+    vars:
+      java_package: default-jdk
+      web_package: nginx
+      web_service: nginx
+      web_root: /var/www/html
+      page_title: "COGSI Ansible Demo Server"
+  
+    tasks:
+      - name: Update apt package index
+        become: true
+        apt:
+          update_cache: yes
+          cache_valid_time: 3600
+  
+      - name: Install JDK
+        become: true
+        package:
+          name: "{{ java_package }}"
+          state: present
+  
+      - name: Install nginx
+        become: true
+        package:
+          name: "{{ web_package }}"
+          state: present
+
+      - name: Deploy custom homepage
+        become: true
+        copy:
+          dest: "{{ web_root }}/index.html"
+          content: |
+              <html>
+                <head>
+                  <title>{{ page_title }}</title>
+                </head>
+                <body>
+                  <h1>{{ page_title }}</h1>
+                  <p>Provisioned with Vagrant and Ansible.</p>
+                </body>
+              </html>
+        notify: restart nginx
+
+      - name: Ensure nginx service is running
+        become: true
+        service:
+          name: "{{ web_service }}"
+          state: started
+          enabled: true
+    
+    handlers:
+      - name: restart nginx
+        become: true
+        service:
+          name: "{{ web_service }}"
+          state: restarted
+

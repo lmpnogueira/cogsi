@@ -1,0 +1,15 @@
+---
+# =============================================================================
+# defaults/main.yml — Default variables for the webserver role
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Defines safe default values that can be overridden by the playbook.
+#
+# Best practice:
+#   Defaults should contain user-adjustable values.
+# =============================================================================
+java_package: default-jdk
+web_package: nginx
+web_service: nginx
+web_root: /var/www/html
+page_title: "Default Ansible Web Server"

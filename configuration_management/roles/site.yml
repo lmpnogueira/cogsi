@@ -1,0 +1,27 @@
+# =============================================================================
+# playbook.yml — COGSI / Configuration Management with Ansible Roles
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Entry point for provisioning a VM using reusable Ansible roles.
+#
+# Lecture topics covered:
+#   - Playbook structure
+#   - Roles
+#   - Variable overrides
+#   - Separation of concerns
+#   - Reusability
+#
+# NOTE:
+#   This playbook delegates most implementation details to the webserver role.
+# =============================================================================
+
+---
+- name: Provision VM
+  hosts: all
+  become_method: sudo
+
+  roles:
+    - role: webserver
+      vars:
+        # Override default page title for demonstration purposes
+        page_title: "COGSI Ansible Role Demo Server"

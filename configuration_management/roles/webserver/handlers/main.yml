@@ -1,0 +1,13 @@
+---
+# =============================================================================
+# handlers/main.yml — Event-driven service actions
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Defines handlers triggered only when notified by changed tasks.
+# =============================================================================
+
+- name: restart nginx
+  become: true
+  service:
+    name: "{{ web_service }}"
+    state: restarted

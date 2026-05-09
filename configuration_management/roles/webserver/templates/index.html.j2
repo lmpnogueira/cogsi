@@ -1,0 +1,17 @@
+<!-- ==========================================================================
+     index.html.j2 — Jinja2 template for custom homepage
+     --------------------------------------------------------------------------
+     Purpose:
+       Demonstrates template-driven configuration management.
+     ========================================================================== -->
+
+<html>
+  <head>
+    <title>{{ page_title }}</title>
+  </head>
+  <body>
+    <h1>{{ page_title }}</h1>
+    <p>Provisioned with Vagrant and Ansible Roles.</p>
+    <p>Hostname: {{ ansible_hostname }}</p>
+  </body>
+</html>

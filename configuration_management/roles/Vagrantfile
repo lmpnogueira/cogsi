@@ -1,0 +1,47 @@
+# =============================================================================
+# Vagrantfile — COGSI / Configuration Management with Ansible Roles
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates Vagrant provisioning with Ansible using reusable roles.
+#
+# Lecture topics covered:
+#   - Role-based configuration management
+#
+# Suggested directory structure:
+#   .
+#   ├── Vagrantfile
+#   ├── playbook.yml
+#   └── roles/
+#       └── webserver/
+#           ├── tasks/
+#           │   └── main.yml
+#           ├── handlers/
+#           │   └── main.yml
+#           ├── templates/
+#           │   └── index.html.j2
+#           └── vars/
+#               └── main.yml
+#
+# NOTE:
+#   Vagrant automatically generates the Ansible inventory for the VM,
+#   so no static inventory file is required for this example.
+# =============================================================================
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-22.04"
+
+  config.vm.network "private_network", type: "dhcp"
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Ansible provisioning
+  config.vm.provision "ansible" do |ansible|
+    # playbook file
+    ansible.playbook = "site.yml"
+
+    # compatibility_mode is required for Ansible 2.0+ to work with Vagrant's Ansible provisioner
+    ansible.compatibility_mode = "2.0"
+
+    # Optional verbosity for troubleshooting
+    # ansible.verbose = "v"
+  end
+end
