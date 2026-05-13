@@ -19,7 +19,7 @@
 #   web  -> nginx
 #   db   -> placeholder database node
 #
-# Suggested directory structure:
+# Directory structure:
 #   .
 #   ├── Vagrantfile
 #   ├── provisioning/

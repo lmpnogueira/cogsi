@@ -1,0 +1,1 @@
+Ensure ./shared_webapp exists in the project directory before running `vagrant up`

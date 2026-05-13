@@ -1,0 +1,290 @@
+# =============================================================================
+# Docker Compose — COGSI / Containerization Part II
+# -----------------------------------------------------------------------------
+# Purpose:
+# - Understand declarative multi-container orchestration
+# - Understand service separation and single responsibility
+# - Understand networking via service names
+# - Understand persistent storage with volumes
+# - Understand environment variable substitution with .env
+# - Understand health checks and startup dependencies
+#
+# Directory structure:
+#   .
+#   ├── compose.yaml
+#   ├── .env
+#   ├── .gitignore
+#   ├── web/
+#   │   ├── Dockerfile
+#   │   ├── .dockerignore
+#   │   ├── requirements.txt
+#   │   └── app.py
+#   └── nginx/
+#       └── default.conf
+# -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# SERVICES
+#
+# Each service defines one container role within the application stack.
+#
+# In this example:
+# - proxy  -> Reverse proxy / frontend entry point
+# - web    -> Main Flask application
+# - redis  -> Backend cache / state service
+#
+# Each service can:
+# - Pull an existing image
+# - Build a local image
+# - Mount volumes
+# - Join one or more networks
+# - Define environment variables
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Reverse proxy service
+  #
+  # Purpose:
+  # - Accept incoming HTTP traffic from the host
+  # - Forward requests internally to the web service
+  #
+  # Key concepts:
+  # - Official image usage
+  # - Port publishing
+  # - Bind mounts for configuration
+  # - Health-based dependency management
+  #
+  # Notes:
+  # - This is the only externally exposed service
+  # - web is intentionally hidden behind proxy
+  # ---------------------------------------------------------------------------
+  proxy:
+    image: nginx:stable-alpine
+
+    # Publish host port -> container port
+    # Value comes from .env file (PROXY_PORT=8080)
+    ports:
+      - "${PROXY_PORT}:80"
+
+    # Mount custom Nginx config from host to container (:ro = read-only)
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+    # Wait until web service is healthy
+    depends_on:
+      web:
+        condition: service_healthy
+
+    # Connect only to frontend network
+    networks:
+      - frontend
+
+    # Restart automatically unless explicitly stopped
+    restart: unless-stopped
+
+
+  # ---------------------------------------------------------------------------
+  # Main application service
+  #
+  # Purpose:
+  # - Runs the Flask application built locally from source
+  #
+  # Key concepts:
+  # - Local Dockerfile build
+  # - .env variable substitution
+  # - Named volumes
+  # - Multi-network connectivity
+  # - Health checks
+  #
+  # Notes:
+  # - This service bridges frontend and backend
+  # - It communicates with redis using service DNS name "redis"
+  # ---------------------------------------------------------------------------
+  web:
+
+    # Build image dynamically from ./web directory
+    build: ./web
+
+    # Runtime environment variables
+    environment:
+      - APP_VERSION=${APP_VERSION}
+      - REDIS_HOST=redis
+
+    # Persistent application data
+    volumes:
+      - web-data:/data
+
+    # Wait for redis to become healthy
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    # Connect to both frontend and backend
+    networks:
+      - frontend
+      - backend
+
+    # Health check endpoint
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    restart: unless-stopped
+
+
+  # ---------------------------------------------------------------------------
+  # Redis backend service
+  #
+  # Purpose:
+  # - Provides persistent key-value storage
+  #
+  # Key concepts:
+  # - Official image
+  # - Command override
+  # - Persistent named volume
+  # - Internal-only networking
+  #
+  # Notes:
+  # - No host port exposure
+  # - Only web can access redis
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+
+    # Enable append-only persistence
+    command: redis-server --appendonly yes
+
+    # Persist redis data
+    volumes:
+      - redis-data:/data
+
+    # Internal backend only
+    networks:
+      - backend
+
+    # Verify service readiness
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+    restart: unless-stopped
+
+
+# =============================================================================
+# NETWORKS
+#
+# Networks define communication boundaries between services.
+#
+# frontend:
+# - proxy <-> web
+#
+# backend:
+# - web <-> redis
+#
+# Security principle:
+# - proxy cannot directly access redis
+# - redis is isolated from external traffic
+# =============================================================================
+networks:
+
+  frontend:
+    driver: bridge
+
+  backend:
+    driver: bridge
+
+
+# =============================================================================
+# VOLUMES
+#
+# Named volumes provide persistent Docker-managed storage.
+#
+# web-data:
+# - Application-generated persistent files
+#
+# redis-data:
+# - Redis append-only data
+#
+# These volumes survive container recreation.
+# =============================================================================
+volumes:
+
+  web-data:
+
+  redis-data:
+
+
+
+# =============================================================================
+# BASIC WORKFLOW
+# =============================================================================
+#
+# Start all services:
+#
+#   docker compose up
+#
+# Rebuild local images:
+#
+#   docker compose up --build
+#
+# Run detached:
+#
+#   docker compose up -d
+# =============================================================================
+
+# =============================================================================
+# VALIDATION / DEBUGGING
+# =============================================================================
+# Validate final resolved config:
+#
+#   docker compose config
+#
+# View running services:
+#
+#   docker compose ps
+#
+# View logs:
+#
+#   docker compose logs
+#
+# Open shell in web:
+#
+#   docker compose exec web sh
+# =============================================================================
+
+# =============================================================================
+# TESTING
+# =============================================================================
+# Access application:
+#
+#   curl http://localhost:8080
+#
+# Health endpoint:
+#
+#   curl http://localhost:8080/health
+#
+# Redis connectivity:
+#
+#   docker compose exec redis redis-cli ping
+# =============================================================================
+
+
+
+# =============================================================================
+# CLEANUP
+# =============================================================================
+# Stop and remove services:
+#
+#   docker compose down
+#
+# Stop and remove services + volumes:
+#
+#   docker compose down -v
+# =============================================================================

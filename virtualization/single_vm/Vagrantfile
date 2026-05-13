@@ -19,7 +19,7 @@
 #   - Uses Ubuntu 24.04 boxes from Bento, which provide broad compatibility
 #   - This file is intentionally modular to support future exercises
 #
-# Suggested directory structure:
+# Directory structure:
 #   .
 #   ├── Vagrantfile
 #   ├── provisioning/

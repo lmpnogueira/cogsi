@@ -14,20 +14,20 @@ The foundation of collaboration. We cover branching strategies (GitFlow), mergin
 ### 2. Build Automation (Gradle)
 Moving beyond manual compilation. We explore dependency management, build lifecycles, and how to package applications into reproducible artifacts.
 
-### 3. Virtualization & Local Environments (Vagrant)
+### 3. Virtualization (Vagrant)
 "It works on my machine" ends here. We use Vagrant to create identical, disposable development environments using VirtualBox, ensuring parity between all students' machines.
 
-### 4. Infrastructure as Code (Ansible)
+### 4. Configuration Management (Ansible)
 Automating server configuration. We use Ansible Playbooks to manage system state, install software, and configure services without manual intervention.
 
 ### 5. Containerization (Docker)
 The shift to microservices. We learn to package applications with their entire runtime environment, exploring Dockerfiles, image optimization, and container networking.
 
-### 6. Continuous Integration & Delivery (Jenkins)
+### 6. Continuous Integration and Delivery (Jenkins)
 The heart of automation. We build CI/CD pipelines that trigger on every code push, running builds, tests, and deployments automatically.
 
-### 7. Observability (Prometheus & Grafana)
-The final "Feedback Loop." We implement continuous monitoring to visualize system health, analyze performance via PromQL, and configure proactive alerting with Alertmanager.
+### 7. Observability (Prometheus, Alert Manager, and Grafana)
+The feedback loop. We implement continuous monitoring with Prometheus to visualize system health and analyze performance, configure proactive alerting with Alertmanager, and use Grafana to create dynamic dashboards that provide a real-time overview of the infrastructure's operational state.
 
 ---
 
