@@ -45,19 +45,19 @@ build/
 out/
 
 # Keep wrappers
-!mvnw
-!mvnw.cmd
-!.mvn/
-!.mvn/wrapper/
-!.mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
+!**/mvnw
+!**/mvnw.cmd
+!**/.mvn/
+!**/.mvn/wrapper/
+!**/.mvn/wrapper/maven-wrapper.jar
+!**/.mvn/wrapper/maven-wrapper.properties
 
-!gradlew
-!gradlew.bat
-!gradle/
-!gradle/wrapper/
-!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
+!**/gradlew
+!**/gradlew.bat
+!**/gradle/
+!**/gradle/wrapper/
+!**/gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.properties
 
 # Packaged artifacts
 *.jar
