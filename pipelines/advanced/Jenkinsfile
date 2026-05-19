@@ -249,7 +249,7 @@ pipeline {
                 dir("${PROJECT_DIR}") {
 
                     archiveArtifacts(
-                        artifacts: 'build/distributions/*',
+                        artifacts: 'app/build/distributions/*',
                         fingerprint: true
                     )
                 }
