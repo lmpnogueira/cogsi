@@ -1,6 +1,6 @@
-/*
+/* =============================================================================
  * Jenkinsfile — COGSI / Pipelines Part 2 
- *
+ * -----------------------------------------------------------------------------
  * Purpose:
  * This pipeline expands on the simple Jenkinsfile by demonstrating
  * key concepts from the second lectureure, including:
@@ -12,6 +12,7 @@
  * - Parallel execution
  * - Triggering concepts (structure only; actual trigger config in Jenkins UI)
  * - Multibranch compatibility through BRANCH_NAME
+ * =============================================================================
  */
 
 pipeline {

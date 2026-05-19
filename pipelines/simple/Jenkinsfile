@@ -1,6 +1,6 @@
-/*
+/* =============================================================================
  * Jenkinsfile — COGSI / Pipelines Part 1 
- *
+ * -----------------------------------------------------------------------------
  * Purpose:
  * - Demonstrates a simple Jenkins pipeline for building a Gradle project.
  * - Serves as a starting point to understand basic pipeline structure and stages.
@@ -12,6 +12,7 @@
  * - SCM checkout to retrieve source code from GitHub.
  * - Artifact archiving to preserve build outputs.
  * - Post actions for cleanup and notifications.    
+ * =============================================================================
  */
 
 pipeline {
