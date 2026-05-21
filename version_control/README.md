@@ -1,194 +1,52 @@
-# Version Control Foundations for Efficient Software Delivery
+# Module: Version Control
 
-Git is the industry standard for distributed version control and the primary "source of truth" in modern DevOps. In this module, we move beyond basic file storage to treat Git as the backbone of collaboration, traceability, and automated delivery.
+Version control is a fundamental DevOps practice that enables teams to track changes, collaborate safely, maintain project history, and manage software evolution over time.
 
-The DevOps Mandate: Automation starts with trust, and trust begins with disciplined version control.
+This directory contains the examples and supporting files used throughout the Version Control module. The examples introduce core Git concepts, including repository creation, commits, branching, merging, conflict resolution, and repository configuration through `.gitignore` and `.gitattributes` files.
 
-## Learning Objectives
+---
 
-By the end of this module, you should be able to:
+## Repository Structure
 
-- Strategise version control's role within a broader DevOps lifecycle
-- Execute advanced Git operations via the command line
-- Architect collaborative workflows (Git Flow vs. GitHub Flow)
-- Implement Quality Assurance (QA) through Pull Requests and automated checks
-- Automate local workflows using Git Hooks.
-- Integrate repositories with CI/CD pipelines (e.g., Jenkins)
+### 1. `foundations/`
 
-## 1. The DevOps Lifecycle and Git
+**Used throughout the course** This folder provides a discussion of common Git workflows and repository management practices.
 
-In DevOps, Git acts as the trigger for the entire software supply chain. Every `push` or `merge` is a signal to the automation server to begin validation.
+- **Goal:** Learn how Git records project history, supports collaborative development through branching and merging, and uses repository configuration files to manage tracked content consistently across different environments.
+- **Key Files:**
+    - `.gitignore`: Specifies files and directories that Git should not track, such as generated artefacts, temporary files, IDE settings, logs, and other machine-specific content.
+    - `.gitatributes`: Defines repository-wide rules for handling files, including line-ending normalisation, diff behaviour, merge strategies, and binary file classification.
+    - `foundations.md`: Version control foundations for efficient software delivery.
 
-| Git Feature | Impact on DevOps Workflow |
-| :--- | :--- |
-| **History & Snapshots** | Provides a complete, immutable audit trail of every change, which is essential for security compliance and debugging |
-| **Branching** | Enables "Shift Left" testing by allowing developers to isolate features and run automated tests before integration |
-| **Traceability** | Allows changes to be linked directly to specific requirements, user stories, or incident reports for better project oversight |
-| **Rollback Capability** | Significantly reduces Mean Time to Recovery (MTTR) by allowing teams to instantly revert to a previously known stable version |
-| **CI/CD Integration** | Acts as the primary trigger for automation pipelines; a `push` or `merge` automatically starts builds and deployments |
-| **Pull Requests** | Serves as a collaborative checkpoint for code reviews, security scans, and ensuring quality standards are met before merging |
+---
 
-## 2. Essential Commands
+## Important Repository Configuration Files
 
-Git uses a three-tier architecture: Working Directory, Staging Area (Index), and Repository.
+### `.gitignore`
 
-```bash
-# Initialise or Clone
-git init
-git clone <url>
+The `.gitignore` file prevents unnecessary files from being added to the repository. Typical examples include:
 
-# The Daily Cycle
-git status                         # Check state of files
-git add <file>                     # Stage specific changes
-git commit -m "feat: add auth"     # Snapshot changes
-git push origin <branch>           # Share with remote
-```
+- Build artefacts (`build/`, `target/`, `dist/`).
+- Temporary files (`*.tmp`, `*.log`).
+- IDE configuration directories (`.idea/`, `.vscode/`).
+- Operating-system-specific files (`.DS_Store`, `Thumbs.db`).
 
+Ignoring such files keeps the repository clean, reduces merge conflicts, and avoids committing machine-specific or generated content.
 
-### Recommendations
+### `.gitattributes`
 
-- Use clear, action-oriented, commit messages
-- Commit early, commit often
-- One logical change per commit
-- Never commit secrets
-- Use `.gitignore`
-- Use branch protection rules to prevent direct pushes to production
+The `.gitattributes` file defines how Git should treat different file types across all contributors. Common uses include:
 
-## 3. Branching
+- Normalising line endings between Windows, macOS, and Linux systems.
+- Marking binary files to prevent incorrect text-based diffs.
+- Defining custom merge or diff behaviour for specific file types.
+- Improving repository consistency in multi-platform development environments.
 
-We use `git switch` (the modern alternative to `checkout`) for safer context switching.
+A typical configuration ensures consistent handling of text files while correctly identifying binary assets.
 
-```bash
-# Git flow approach
-git switch develop
-# Create and switch to new branch
-git switch -c feature/shopping-cart
-# Work
-git add .
-git commit -m "Implement shopping cart"
-git push origin feature/shopping-cart
-```
+---
 
-### Merge a Branch
-
-```bash
-git switch develop
-git merge feature/shopping-cart
-```
-
-### Handling Merge Conflicts
-
-Conflicts occur when Git cannot automatically reconcile changes.
-
-```bash
-# Resolve conflicts manually
-git add .
-git commit -m "Resolve merge conflict"
-```
-
-### Good Practices
-
-- Pull frequently
-- Rebase or merge often
-- Keep branches short-lived
-
-
-## 4. Flow Models
-
-Choosing the right workflow depends on project complexity and release frequency.
-
-### GitHub Flow 
-
-Lightweight, branch-based. Ideal for Continuous Deployment.
-
-1. Create branch from `main`
-2. Make changes
-3. Open Pull Request
-4. Review + automated checks
-5. Merge
-
-### Git Flow
-
-Strictly structured: 
-
-- `main`
-- `develop`
-- `feature/*`
-- `release/*`
-- `hotfix/*`
-
-Best for larger teams or scheduled releases.
-
-## 5. Pull Requests
-
-Pull Requests (PRs) are not just code reviews; they are gatekeepers.
-
-A profesional PR should trigger:
-- Static Analysis: Linting and security scanning
-- Unit/Integration Tests: Ensuring no regressions
-- Peer Review: Human oversight for architectural consistency
-
-### Best Practices
-
-- Keep PRs small and focused
-- Write meaningful commit messages
-- Require CI success before merging
-- Avoid direct pushes to `main`
-
-
-## 6. Automation with Git Hooks
-
-DevOps professionals automate everything, including the local environment. Hooks located in `.git/hooks/` can prevent "bad" code from ever leaving a developer's machine.
-
-```bash
-#!/bin/bash
-npm run lint
-if [ $? -ne 0 ]; then
-  echo "Linting failed. Commit aborted."
-  exit 1
-fi
-```
-
-Note on portability: By default, files in `.git/hooks/` are not committed to the repository and remain local to your machine. In professional DevOps environments, use tools like the pre-commit framework (language-agnostic) to share and enforce these hooks across the entire team.
-
-## 7. Release Management and Tagging
-
-Tags identify stable versions. Standardise your tags using the `MAJOR.MINOR.PATCH` format: 
-- `MAJOR`: Incompatible API changes  
-- `MINOR`: Functionality added in a backwards-compatible manner 
-- `PATCH`: Backwards-compatible bug fixes
-
-### Create a Release Tag
-
-```bash
-git tag -a v1.0.0 -m "First stable release"
-git push origin v1.0.0
-```
-
-### Why Tags Matter
-
-- Version traceability
-- Deployment rollback
-- Semantic versioning
-- Auditability
-
-
-## 8. Common Mistakes to Avoid
-
-- Working directly on `main`
-- Committing `.env` files or API keys (use `.gitignore`)
-- Large, infrequent commits
-- Ignoring Pull Requests
-- Poor commit messages
-- Force-pushing shared branches
-- Committing generated files unnecessarily
-
-
-# Recommended Resources
-
-- **Pro Git** — Scott Chacon & Ben Straub  
-- **GitHub Docs** — GitHub Flow, Pull Requests, Actions  
-- **Atlassian Git Tutorials**  
-- **Conventional Commits Specification**
-
-
+## Prerequisites
+- **Git**: Git version 2.x or later.
+- **Text Editor or IDE**: Any editor capable of modifying plain text files.
+- **Command-line terminal**: Basic familiarity with terminal commands is recommended, as all examples use the Git command-line interface.

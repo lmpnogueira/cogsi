@@ -1,0 +1,206 @@
+# =========================================================
+# OS / Editor
+# =========================================================
+.DS_Store
+**/.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.project
+.classpath
+.settings/
+*.iml
+
+# =========================================================
+# Java / JVM
+# =========================================================
+# Compiled class files
+*.class
+
+# Logs
+**/*.log
+
+# BlueJ
+*.ctxt
+
+# Mobile Tools for Java
+.mtj.tmp/
+
+# Crash logs
+hs_err_pid*
+replay_pid*
+
+# =========================================================
+# Build Artifacts (Maven / Gradle / Generic)
+# =========================================================
+# Maven
+**/target/
+
+# Gradle
+**/.gradle/
+**/build/
+**/out/
+
+# Generic build / distribution folders
+**/bin/
+**/dist/
+**/tmp/
+**/app/bin/
+**/app/lib/
+
+# Keep Maven wrappers anywhere
+!**/mvnw
+!**/mvnw.cmd
+!**/.mvn/
+!**/.mvn/wrapper/
+!**/.mvn/wrapper/maven-wrapper.jar
+!**/.mvn/wrapper/maven-wrapper.properties
+
+# Keep Gradle wrappers anywhere
+!**/gradlew
+!**/gradlew.bat
+!**/gradle/
+!**/gradle/wrapper/
+!**/gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.properties
+
+# Packaged artifacts
+**/*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+!**/.mvn/wrapper/maven-wrapper.jar
+
+**/*.war
+**/*.nar
+**/*.ear
+**/*.zip
+**/*.tar.gz
+**/*.rar
+
+# =========================================================
+# Test / Coverage / Reports
+# =========================================================
+**/coverage/
+.coverage
+**/jacoco.exec
+**/.jacoco/
+**/surefire-reports/
+**/failsafe-reports/
+**/test-output/
+**/reports/
+
+# =========================================================
+# Environment / Secrets
+# =========================================================
+.env
+.env.*
+*.env
+*.local
+*.secret
+**/secrets.local/
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# =========================================================
+# Vagrant
+# =========================================================
+.vagrant/
+*.box
+.vagrant.d/
+
+# Keep Vagrantfiles
+!Vagrantfile
+
+# =========================================================
+# Docker / Compose
+# =========================================================
+docker-data/
+docker-volumes/
+*.pid
+*.cid
+*.img
+
+# Local-only overrides
+docker-compose.override.yml
+compose.override.yaml
+compose.override.yml
+
+# Keep main definitions
+!Dockerfile
+!docker-compose.yml
+!compose.yaml
+!compose.yml
+
+# =========================================================
+# Ansible
+# =========================================================
+*.retry
+ansible.log
+*.vault
+
+# Local inventories if environment-specific
+inventory.local
+hosts.local
+
+# Keep standard project files
+!ansible.cfg
+
+# =========================================================
+# Jenkins
+# =========================================================
+.jenkins/
+jenkins_home/
+workspace/
+builds/
+updates/
+nodes/
+users/
+
+# Scoped Jenkins generated internals
+.jenkins/plugins/
+.jenkins/secrets/
+
+# Keep pipeline definitions
+!Jenkinsfile
+
+# =========================================================
+# Prometheus
+# =========================================================
+prometheus_data/
+
+# Keep configuration
+!prometheus.yml
+
+# =========================================================
+# Grafana
+# =========================================================
+grafana_data/
+grafana.db
+grafana_data/plugins/
+
+# Keep dashboards / provisioning as code
+!**/grafana/
+!**/grafana/dashboards/
+!**/grafana/provisioning/
+
+# =========================================================
+# Alertmanager
+# =========================================================
+alertmanager_data/
+nflog*
+silences*
+
+# Keep configuration
+!alertmanager.yml
+
+# =========================================================
+# Miscellaneous
+# =========================================================
+.cache/
+**/*.bak
+**/*.old

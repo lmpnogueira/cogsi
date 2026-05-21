@@ -1,0 +1,23 @@
+# Automatically detect text files and normalise line endings in the repository.
+# This helps avoid unnecessary changes when contributors use different
+# operating systems (Windows, Linux, or macOS).
+* text=auto
+
+# Shell scripts should always use LF line endings because they are
+# commonly executed on Linux and macOS systems.
+*.sh text eol=lf
+
+# Batch scripts should always use CRLF line endings because they are
+# intended for execution on Windows systems.
+*.bat text eol=crlf
+
+# Treat image files as binary data.
+# Git will not attempt text-based diffs or automatic line-ending conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+
+# Treat PDF documents as binary files.
+# This prevents meaningless textual diffs and merge attempts.
+*.pdf binary
