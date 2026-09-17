@@ -1,0 +1,52 @@
+plugins {
+    id 'base'
+}
+
+tasks.register('generateReport') {
+    group = 'Build'
+    description = 'Generates a report from the input file'
+
+    def inputFile = file('input/messages.txt')
+    def outputFile = layout.buildDirectory.file('reports/messages.txt')
+
+    inputs.file(inputFile)
+    outputs.file(outputFile)
+
+    doLast {
+        def lines = inputFile.readLines()
+        def nonEmptyLines = lines.findAll { !it.trim().isEmpty() }
+
+        outputFile.get().asFile.text = """
+Message Report
+==============
+
+Total lines: ${lines.size()}
+Non-empty lines: ${nonEmptyLines.size()}
+""".stripIndent().trim() + '\n'
+
+        println "Report generated: ${outputFile.get().asFile}"
+    }
+}
+
+tasks.register('packageReport') {
+    group = 'Build'
+    description = 'Packages the generated report'
+
+    dependsOn(tasks.named('generateReport'))
+
+    def reportFile = layout.buildDirectory.file('reports/messages.txt')
+    def archiveFile = layout.buildDirectory.file('reports/messages-report.zip')
+
+    inputs.file(reportFile)
+    outputs.file(archiveFile)
+
+    doLast {
+        ant.zip(
+            destfile: archiveFile.get().asFile,
+            basedir: reportFile.get().asFile.parentFile,
+            includes: reportFile.get().asFile.name
+        )
+
+        println "Report packaged: ${archiveFile.get().asFile}"
+    }
+}

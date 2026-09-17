@@ -1,0 +1,10 @@
+Gradle automates the build process.
+Build automation improves reproducibility.
+Tasks define units of work.
+Inputs and outputs enable incremental builds.
+Gradle can skip tasks whose inputs have not changed.
+The Gradle Wrapper ensures a consistent Gradle version.
+Dependency management simplifies project configuration.
+The task graph determines which tasks need to run.
+Build caching can further improve build performance.
+DevOps relies on repeatable and automated processes.

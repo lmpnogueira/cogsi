@@ -1,0 +1,19 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'org.example'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+publishing {
+    publications {
+        create('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}

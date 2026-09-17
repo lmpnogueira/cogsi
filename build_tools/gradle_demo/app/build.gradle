@@ -35,18 +35,17 @@ application {
 // Generate a thin JAR that includes the application classes and resources, but not the dependencies (the default).
 tasks.named('jar') {
     archiveBaseName = 'chat-server'
-    archiveVersion = '1.0'
-    archiveClassifier = ''
+    archiveVersion = project.version.toString()
 
     doLast {
-        println("Generated application JAR: ${archiveFile.get().asFile.name}")
+        println "Generated application JAR: ${archiveFile.get().asFile.name}"
     }
 }
 
 // Custom task to copy runtime dependencies into a separate directory for easier packaging
 tasks.register('copyDependencies', Copy) {
     group = 'build'
-    description = 'Copies runtime dependencies into build/libs/lib'
+    description = 'Copies runtime dependencies to the application lib directory'
 
     from(configurations.runtimeClasspath)
     into(layout.buildDirectory.dir('libs/lib'))
@@ -61,25 +60,24 @@ tasks.register('packageApp') {
     dependsOn(tasks.named('copyDependencies'))
 }
 
-// Custom task to capture and display project information at runtime, ensuring values are captured at configuration time for safety.
+// Custom task to display basic project and build information.
 tasks.register('printProjectInfo') {
     group = 'Help'
     description = 'Displays basic project and build information'
 
-    // Capture values at configuration time to avoid issues with configuration cache
+    // These values are evaluated during the configuration phase.
     def projectName = project.name
     def projectVersion = project.version
     def gradleVersion = gradle.gradleVersion
-    def toolchainVersion = java.toolchain.languageVersion.get()
-    def buildDir = layout.buildDirectory.get().asFile
 
     doLast {
         println "=============================="
         println "Project Name: $projectName"
         println "Project Version: $projectVersion"
         println "Gradle Version: $gradleVersion"
-        println "Java Toolchain Version: $toolchainVersion"
-        println "Build Directory: $buildDir"
+        // These values are queried when the task executes.
+        println "Java Toolchain Version: ${java.toolchain.languageVersion.get()}"
+        println "Build Directory: ${layout.buildDirectory.get().asFile}"
         println "=============================="
     }
 }
@@ -93,12 +91,11 @@ tasks.register('cleanLogs', Delete) {
     delete fileTree(dir: layout.buildDirectory, include: '**/*.log')
 }
 
-// Custom task to run the chat client application, allowing configuration of server IP and port via Gradle properties.
+// Custom task to run the chat client application.
+// The server IP and port can be configured through Gradle properties.
 tasks.register('runClient', JavaExec) {
-    group = "DevOps"
-    description = "Launches a chat client that connects to a chat server"
-  
-    classpath = sourceSets.main.runtimeClasspath
+    group = 'DevOps'
+    description = 'Launches the chat client and connects it to a chat server'
 
     classpath = sourceSets.main.runtimeClasspath
     mainClass.set('org.example.ChatClientApp')
@@ -109,6 +106,6 @@ tasks.register('runClient', JavaExec) {
     args(serverIP.get(), serverPort.get())
 
     doFirst {
-        println("Starting ChatClientApp with server IP: ${serverIP.get()} and port: ${serverPort.get()}")
+        println "Starting ChatClientApp with server IP: ${serverIP.get()} and port: ${serverPort.get()}"
     }
 }

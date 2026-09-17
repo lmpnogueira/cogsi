@@ -132,8 +132,10 @@ public class ChatServer implements Runnable{
                     if (input.toLowerCase().startsWith("/quit")) {
                         return;
                     }
-                    for (PrintWriter writer : writers) {
-                        writer.println("MESSAGE " + name + ": " + input);
+                    synchronized (writers) {
+                        for (PrintWriter writer : writers) {
+                            writer.println("MESSAGE " + name + ": " + input);
+                        }
                     }
                 }
             } catch (NoSuchElementException e){
