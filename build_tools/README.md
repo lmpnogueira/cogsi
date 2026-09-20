@@ -30,6 +30,7 @@ Additional independent examples illustrating specific Gradle concepts:
 - `application_distribution/`: Demonstrates application packaging and distribution using the Gradle Application Plugin, including `installDist`, `distZip`, and `distTar`.
 - `incremental_task/`: Demonstrates incremental builds using task inputs and outputs and Gradle's `UP-TO-DATE` mechanism.
 - `publishing/`: Demonstrates publishing a Java library to a Maven repository using the `maven-publish` plugin.
+- `task_types/`: Demonstrates how to define reusable custom Gradle task types by extending built-in task types and encapsulating common task configuration.
 
 These examples are provided as reference material and are independent of the assessed `bookstore` migration.
 

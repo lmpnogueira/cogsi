@@ -1,0 +1,19 @@
+abstract class PackageArchive extends Zip {
+
+    PackageArchive() {
+        archiveBaseName.convention('resources')
+        destinationDirectory.convention(
+            project.layout.buildDirectory.dir('packages')
+        )
+    }
+}
+
+tasks.register('packageResources', PackageArchive) {
+    archiveBaseName.set('app-resources')
+    from('src/main/resources')
+}
+
+tasks.register('packageDocs', PackageArchive) {
+    archiveBaseName.set('documentation')
+    from('src/main/docs')
+}
