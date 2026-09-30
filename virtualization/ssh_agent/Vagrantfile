@@ -1,0 +1,67 @@
+# =============================================================================
+# Vagrantfile — COGSI / Virtualization
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates SSH agent forwarding with Vagrant.
+#
+#   The VM can use SSH keys loaded in the host's SSH agent without copying
+#   the private keys into the VM.
+#
+# Directory structure:
+#   .
+#   ├── Vagrantfile
+#   ├── README.md
+#   └── provisioning/
+#       └── setup.sh
+#
+# IMPORTANT:
+#   An SSH key must be loaded in the host's SSH agent before starting the VM.
+# =============================================================================
+
+Vagrant.configure("2") do |config|
+
+  # ===========================================================================
+  # VM CONFIGURATION
+  # ===========================================================================
+
+  config.vm.box = "bento/ubuntu-24.04"
+  config.vm.box_version = "202510.26.0"
+
+  config.vm.hostname = "ssh-agent-demo"
+
+
+  # ===========================================================================
+  # SSH AGENT FORWARDING
+  # ---------------------------------------------------------------------------
+  # Forward the host's SSH agent into the VM.
+  #
+  # The private key remains on the host.
+  # ===========================================================================
+
+  config.ssh.forward_agent = true
+
+
+  # ===========================================================================
+  # PROVIDER CONFIGURATION
+  # ===========================================================================
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus = 2
+    vb.gui = false
+  end
+
+  config.vm.provider "vmware_desktop" do |vmware|
+    vmware.vmx["memsize"] = "2048"
+    vmware.vmx["numvcpus"] = "2"
+  end
+
+
+  # ===========================================================================
+  # PROVISIONING
+  # ===========================================================================
+
+  config.vm.provision "shell",
+    path: "provisioning/setup.sh"
+
+end

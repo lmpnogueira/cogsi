@@ -1,0 +1,86 @@
+# =============================================================================
+# Vagrantfile — COGSI / Virtualization
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Demonstrates Rsync-based synced folders.
+#
+#   Unlike the default shared-folder mechanism, Rsync synchronizes files from
+#   the host to the guest by copying only changed files.
+#
+#   This is particularly useful when the default shared-folder mechanism
+#   provides poor I/O performance.
+#
+# Directory structure:
+#   .
+#   ├── Vagrantfile
+#   ├── README.md
+#   └── web/
+#       └── index.html
+#
+# IMPORTANT:
+#   Rsync must be available on the host system.
+# =============================================================================
+
+Vagrant.configure("2") do |config|
+
+  # ===========================================================================
+  # VM CONFIGURATION
+  # ===========================================================================
+
+  config.vm.box = "bento/ubuntu-24.04"
+  config.vm.box_version = "202510.26.0"
+  config.vm.hostname = "rsync-demo"
+
+
+  # ===========================================================================
+  # RSYNC SYNCHRONIZED FOLDER
+  # ---------------------------------------------------------------------------
+  # The contents of ./web on the host are synchronized to /var/www/html
+  # inside the VM.
+  #
+  # Only files that have changed are transferred.
+  # ===========================================================================
+
+  config.vm.synced_folder "./web", "/var/www/html",
+    type: "rsync"
+
+
+  # ===========================================================================
+  # NETWORKING
+  # ---------------------------------------------------------------------------
+
+  config.vm.network "forwarded_port",
+    guest: 80,
+    host: 8080,
+    auto_correct: true
+
+
+  # ===========================================================================
+  # PROVIDER CONFIGURATION
+  # ---------------------------------------------------------------------------
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus = 2
+    vb.gui = false
+  end
+
+  config.vm.provider "vmware_desktop" do |vmware|
+    vmware.vmx["memsize"] = "2048"
+    vmware.vmx["numvcpus"] = "2"
+  end
+
+
+  # ===========================================================================
+  # PROVISIONING
+  # ---------------------------------------------------------------------------
+
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nginx
+
+    systemctl enable nginx
+    systemctl restart nginx
+  SHELL
+
+end

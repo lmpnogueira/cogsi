@@ -17,7 +17,7 @@
 #
 # Example topology:
 #   web  -> nginx
-#   db   -> placeholder database node
+#   db   -> MariaDB database node
 #
 # Directory structure:
 #   .
@@ -29,9 +29,10 @@
 #   ├── shared/
 #   └── shared_webapp/
 #
-# NOTE: 
-#  If using the VMware provider, ensure the static IPs are adjusted to match
-#  your host's specific vmnet subnet to avoid network initialization failures
+# NOTE:
+#   When using VMware Fusion, private-network IP addressing depends on the
+#   vmnet configuration of the host. Adjust the network configuration as
+#   required for the local VMware environment.
 # =============================================================================
 
 # ===========================================================================
@@ -70,11 +71,25 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "./shared", "/shared"
 
 
-  # Default provider configuration for all machines
+  # ===========================================================================
+  # DEFAULT PROVIDER CONFIGURATION
+  # ---------------------------------------------------------------------------
+  # VirtualBox
+  # ===========================================================================
+
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
     vb.cpus = 2
     vb.gui = false
+  end
+
+  # ===========================================================================
+  # VMware Desktop
+  # ---------------------------------------------------------------------------
+
+  config.vm.provider "vmware_desktop" do |vmware|
+    vmware.vmx["memsize"] = "2048"
+    vmware.vmx["numvcpus"] = "2"
   end
 
   # ===========================================================================
@@ -94,7 +109,7 @@ Vagrant.configure("2") do |config|
 
     web.vm.hostname = "web"
 
-    # Private network for internal communication
+    # Private network for inter-VM communication
     web.vm.network "private_network", ip: "192.168.56.10"
 
     # Access web service from host browser
@@ -112,7 +127,7 @@ Vagrant.configure("2") do |config|
       path: "provisioning/web.sh"
 
     # -------------------------------------------------------------------------
-    # Simple hostname resolution
+    # Simple hostname mapping for inter-VM communication
     # -------------------------------------------------------------------------
     web.vm.provision "shell",
       name: "hosts_config",
@@ -130,7 +145,7 @@ Vagrant.configure("2") do |config|
 
     db.vm.hostname = "db"
 
-    # Private network for internal communication
+    # Private network for inter-VM communication
     db.vm.network "private_network", ip: "192.168.56.11"
 
     # Optional DB access from host
@@ -144,7 +159,7 @@ Vagrant.configure("2") do |config|
       path: "provisioning/db.sh"
 
     # -------------------------------------------------------------------------
-    # Simple hostname resolution
+    # Simple hostname mapping for inter-VM communication
     # -------------------------------------------------------------------------
     db.vm.provision "shell",
       name: "hosts_config",
