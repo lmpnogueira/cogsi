@@ -6,6 +6,14 @@ This directory contains the configuration files, examples, and practical resourc
 
 ---
 
+## Using These Examples
+
+The examples in this module are intended to support hands-on learning and illustrate the containerization concepts covered in the lectures.
+
+They are not complete solutions to CA4. You are expected to adapt and extend them to meet the assignment requirements, using your own applications and justifying your design and implementation choices.
+
+---
+
 ## Repository Structure
 
 ### 1. `single_container/`
@@ -19,17 +27,20 @@ This directory contains the configuration files, examples, and practical resourc
     - `app.py`: Example containerized application.
     - `requirements.txt`: Application dependencies.
 
-### 2. `multi_vms/`
+### 2. `multi_containers/`
 
 **Used in week 2.** This folder explores multi-container environments using Docker Compose.
 
 - **Goal:** Build a complete multi-service application stack where containers interact through service discovery, reverse proxies, environment variables, health checks, networks, and persistent storage.
 - **Key Files:**
     - `compose.yaml`: Main declarative configuration for orchestrating multiple services.
-    - `.env`: Centralized runtime configuration. 
+    - `.env.example`: Centralized runtime configuration. 
     - `web/`: Custom application image source.
     - `nginx/default.conf`: Reverse proxy configuration.
     - Named volumes, bind mounts, and network isolation examples.
+
+Copy `.env.example` to `.env` before starting the application. Customize the values in `.env` if needed. The `.env` file is excluded from version control, while `.env.example` documents the required configuration.
+
 ---
 
 ## Prerequisites

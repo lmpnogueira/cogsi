@@ -12,7 +12,7 @@
 # Directory structure:
 #   .
 #   ├── compose.yaml
-#   ├── .env
+#   ├── .env.example
 #   ├── .gitignore
 #   ├── web/
 #   │   ├── Dockerfile
@@ -21,6 +21,9 @@
 #   │   └── app.py
 #   └── nginx/
 #       └── default.conf
+#
+# Before starting the stack, copy .env.example to .env
+# The local .env file is excluded from version control
 # -----------------------------------------------------------------------------
 
 
@@ -230,61 +233,110 @@ volumes:
 #
 #   docker compose up
 #
-# Rebuild local images:
+# Rebuild local images and start all services:
 #
 #   docker compose up --build
 #
 # Run detached:
 #
 #   docker compose up -d
+#
+# Rebuild images and run detached:
+#
+#   docker compose up --build -d
 # =============================================================================
+
 
 # =============================================================================
 # VALIDATION / DEBUGGING
 # =============================================================================
-# Validate final resolved config:
+#
+# Validate the Compose file and resolve configuration variables:
 #
 #   docker compose config
 #
-# View running services:
+# View service status:
 #
 #   docker compose ps
 #
-# View logs:
+# View logs from all services:
 #
 #   docker compose logs
 #
-# Open shell in web:
+# Follow application logs:
+#
+#   docker compose logs -f web
+#
+# Follow logs from all services:
+#
+#   docker compose logs -f
+#
+# Open a shell in the web container:
 #
 #   docker compose exec web sh
+#
+# Check service health and startup status:
+#
+#   docker compose ps
+#
 # =============================================================================
+
 
 # =============================================================================
 # TESTING
 # =============================================================================
-# Access application:
+#
+# Access the application through Nginx:
 #
 #   curl http://localhost:8080
 #
-# Health endpoint:
+# Check application health through Nginx:
 #
-#   curl http://localhost:8080/health
+#   curl -i http://localhost:8080/health
 #
-# Redis connectivity:
+# Check Redis connectivity:
 #
 #   docker compose exec redis redis-cli ping
+#
+# Expected Redis response:
+#
+#   PONG
+#
+# Check the visit counter stored in Redis:
+#
+#   docker compose exec redis redis-cli GET visits
+#
+# Send multiple requests to increment the counter:
+#
+#   curl -s http://localhost:8080
+#   curl -s http://localhost:8080
+#   curl -s http://localhost:8080
+#
+# Read the counter again and verify that it has increased:
+#
+#   docker compose exec redis redis-cli GET visits
+#
+# Inspect the application access log:
+#
+#   docker compose exec web cat /data/access.log
+#
+# Check Nginx health:
+#
+#   curl -i http://localhost:8080/nginx-health
+#
 # =============================================================================
-
 
 
 # =============================================================================
 # CLEANUP
 # =============================================================================
-# Stop and remove services:
+#
+# Stop and remove containers and networks:
 #
 #   docker compose down
 #
-# Stop and remove services + volumes:
+# Stop and remove containers, networks, and named volumes:
+# WARNING: this also deletes persistent application and Redis data.
 #
 #   docker compose down -v
 # =============================================================================
