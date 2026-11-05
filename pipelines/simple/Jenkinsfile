@@ -1,17 +1,19 @@
+
 /* =============================================================================
- * Jenkinsfile — COGSI / Pipelines Part 1 
+ * Jenkinsfile — COGSI / Pipelines Part 1
  * -----------------------------------------------------------------------------
  * Purpose:
  * - Demonstrates a simple Jenkins pipeline for building a Gradle project.
  * - Serves as a starting point to understand basic pipeline structure and stages.
  *
  * Key Concepts:
- * - Declarative pipeline syntax for readability and maintainability.
- * - Use of stages to organize build steps logically.
- * - Global options, parameters, and environment variables for consistent execution.
+ * - Declarative Pipeline syntax.
+ * - Stages and steps.
+ * - Global options, parameters, and environment variables.
  * - SCM checkout to retrieve source code from GitHub.
- * - Artifact archiving to preserve build outputs.
- * - Post actions for cleanup and notifications.    
+ * - Build, test, and packaging stages.
+ * - Test result publication and artifact archiving.
+ * - Post-build actions and workspace cleanup.
  * =============================================================================
  */
 
@@ -19,13 +21,12 @@ pipeline {
 
     /*
      * Defines where the pipeline can run.
-     * For simplicity, Jenkins may use any available executor.
+     * Jenkins may use any available executor.
      */
     agent any
 
     /*
-     * Global execution controls improve safety,
-     * readability, and reproducibility.
+     * Global execution controls.
      */
     options {
 
@@ -37,62 +38,54 @@ pipeline {
 
         // Prevents overlapping executions of the same pipeline
         disableConcurrentBuilds()
+
+        // Disables automatic checkout because it is performed explicitly
+        skipDefaultCheckout(true)
     }
 
     /*
-     * Runtime parameters allow controlled customization
-     * without editing the Jenkinsfile itself.
+     * Runtime parameters.
      */
     parameters {
 
-        // Selects the Gradle build profile
-        choice(
-            name: 'BUILD_PROFILE',
-            choices: ['dev', 'prod'],
-            description: 'Select the Gradle build profile'
-        )
-
-        // Allows artifact archiving to be toggled
+        // Controls whether generated artifacts are archived
         booleanParam(
             name: 'ARCHIVE_ARTIFACTS',
             defaultValue: true,
-            description: 'Archive generated distribution artifacts'
+            description: 'Archive generated application artifacts'
         )
     }
 
     /*
-     * Global environment variables reused across stages.
+     * Global environment variables.
      */
     environment {
 
-        // Name of the application/module
+        // Application/module name
         APP_NAME = 'gradle_demo'
 
         // Relative path inside the course repository
         PROJECT_DIR = 'build_tools/gradle_demo'
 
-        // Standardized Gradle wrapper command
+        // Gradle wrapper command
         GRADLE_CMD = './gradlew'
-
-        // Expected output location for packaged artifacts
-        ARTIFACT_DIR = 'app/build/distributions'
     }
 
     stages {
 
         /*
-         * Retrieves the project source code from GitHub.
-         * Explicit repository and branch improve consistency.
+         * Retrieves source code from GitHub.
          */
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/lmpnogueira/cogsi.git'
+                git branch: 'main',
+                    url: 'https://github.com/lmpnogueira/cogsi.git'
             }
         }
 
         /*
-         * Demonstrates how Jenkins exposes useful runtime metadata.
-         * Uses environment variables in both Groovy and shell contexts.
+         * Demonstrates Jenkins runtime metadata
+         * and environment variable access.
          */
         stage('Verify Environment') {
             steps {
@@ -102,76 +95,76 @@ pipeline {
                 echo "Job Name: ${env.JOB_NAME}"
                 echo "Build Number: ${env.BUILD_NUMBER}"
                 echo "Workspace: ${env.WORKSPACE}"
-                echo "Selected Profile: ${params.BUILD_PROFILE}"
 
-                // Accessing variables from shell
+                // Accessing variables from the shell
                 sh '''
                     echo "Shell Environment:"
                     echo "JOB_NAME=$JOB_NAME"
                     echo "BUILD_NUMBER=$BUILD_NUMBER"
                     echo "WORKSPACE=$WORKSPACE"
-
-                    # Ensure Gradle wrapper can execute
-                    chmod +x ${WORKSPACE}/${PROJECT_DIR}/gradlew
                 '''
             }
         }
 
         /*
-         * Compiles the application.
-         * Tests are intentionally excluded. 
+         * Compiles the application without running tests.
          */
         stage('Build') {
             steps {
-
                 dir("${PROJECT_DIR}") {
-
-                    sh """
-                        # Clean previous outputs
-                        # Build using selected profile
-                        ${GRADLE_CMD} clean build -Pprofile=${params.BUILD_PROFILE} -x test
-                    """
+                    sh '''
+                        chmod +x gradlew
+                        ./gradlew clean classes
+                    '''
                 }
             }
         }
 
         /*
-         * Generates distributable artifacts separately.
-         * Reinforces CI stage separation.
+         * Executes unit tests and publishes their results.
+         */
+        stage('Test') {
+            steps {
+                dir("${PROJECT_DIR}") {
+                    sh "${GRADLE_CMD} test"
+                }
+            }
+
+            post {
+                always {
+                    junit(
+                        testResults: "${PROJECT_DIR}/app/build/test-results/test/*.xml"
+                        allowEmptyResults: true
+                    )
+                }
+            }
+        }
+
+        /*
+         * Generates application artifacts.
          */
         stage('Package') {
             steps {
-
                 dir("${PROJECT_DIR}") {
-
-                    sh """
-                        # Assemble distribution artifacts
-                        ${GRADLE_CMD} assemble -Pprofile=${params.BUILD_PROFILE}
-                    """
+                    sh "${GRADLE_CMD} assemble"
                 }
             }
         }
 
         /*
          * Archives generated artifacts for download,
-         * traceability, or downstream usage.
+         * traceability, and future use.
          */
         stage('Archive') {
 
-            /*
-             * Stage executes only if archiving
-             * is enabled through parameters.
-             */
             when {
                 expression { params.ARCHIVE_ARTIFACTS }
             }
 
             steps {
-
                 dir("${PROJECT_DIR}") {
-
                     archiveArtifacts(
-                        artifacts: "${ARTIFACT_DIR}/*",
+                        artifacts: 'app/build/libs/*.jar, app/build/distributions/*',
                         fingerprint: true
                     )
                 }
@@ -184,31 +177,22 @@ pipeline {
      */
     post {
 
-        /*
-         * Runs regardless of outcome.
-         */
+        // Runs regardless of the pipeline outcome
         always {
             echo "Pipeline finished with status: ${currentBuild.currentResult}"
         }
 
-        /*
-         * Success-specific feedback.
-         */
+        // Success-specific feedback
         success {
             echo 'Build completed successfully.'
         }
 
-        /*
-         * Failure-specific feedback.
-         */
+        // Failure-specific feedback
         failure {
             echo 'Build failed. Review console output for details.'
         }
 
-        /*
-         * Cleanup avoids workspace accumulation
-         * across multiple executions.
-         */
+        // Cleanup after pipeline execution
         cleanup {
             cleanWs()
         }

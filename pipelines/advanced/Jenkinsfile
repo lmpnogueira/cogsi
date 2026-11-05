@@ -1,25 +1,30 @@
 /* =============================================================================
- * Jenkinsfile — COGSI / Pipelines Part 2 
+ * Jenkinsfile — COGSI / Pipelines Part 2
  * -----------------------------------------------------------------------------
  * Purpose:
- * This pipeline expands on the simple Jenkinsfile by demonstrating
- * key concepts from the second lectureure, including:
+ * - Demonstrates advanced Jenkins Pipeline concepts.
+ * - Extends the simple pipeline with branch-aware execution and parallelism.
  *
- * - Conditional execution with when
- * - Branch-aware logic
- * - Parameters
- * - Environment variables
- * - Parallel execution
- * - Triggering concepts (structure only; actual trigger config in Jenkins UI)
- * - Multibranch compatibility through BRANCH_NAME
+ * Key Concepts:
+ * - Conditional execution using when.
+ * - Branch-aware execution in Multibranch Pipelines.
+ * - Parameters and environment variables.
+ * - Parallel execution of independent validation tasks.
+ * - Multibranch Pipeline integration through BRANCH_NAME.
+ * - Artifact archiving and post-build actions.
+ *
+ * Note:
+ * - Multibranch Pipeline configuration and build triggers are configured
+ *   in Jenkins and GitHub, respectively.
+ * - Deployment stages are illustrative placeholders.
  * =============================================================================
  */
 
 pipeline {
 
     /*
-     * For simplicity, this pipeline can run on any available executor.
-     * Future versions may replace this with labeled or distributed agents.
+     * Defines where the pipeline can run.
+     * Jenkins may use any available executor.
      */
     agent any
 
@@ -28,27 +33,23 @@ pipeline {
      */
     options {
 
-        // Prevent runaway executions
+        // Prevents builds from hanging indefinitely
         timeout(time: 20, unit: 'MINUTES')
 
-        // Add timestamps to logs
+        // Adds timestamps to console output
         timestamps()
 
-        // Avoid concurrent execution conflicts
+        // Prevents overlapping executions
         disableConcurrentBuilds()
+
+        // Disables automatic checkout because it is performed explicitly
+        skipDefaultCheckout(true)
     }
 
     /*
      * Runtime customization.
      */
     parameters {
-
-        // Controls whether optional integration tests should execute
-        booleanParam(
-            name: 'RUN_INTEGRATION_TESTS',
-            defaultValue: false,
-            description: 'Run integration tests in addition to unit tests'
-        )
 
         // Controls artifact archiving
         booleanParam(
@@ -65,23 +66,20 @@ pipeline {
 
         APP_NAME = 'gradle_demo'
         PROJECT_DIR = 'build_tools/gradle_demo'
-        GRADLE_CMD = './gradlew'
 
-        /*
-         * Used by environment-based conditional logic.
-         * Students may later externalize or parameterize this.
-         */
+        // Used to demonstrate environment-based conditional execution
         TEST_ENABLED = 'true'
     }
 
     stages {
 
         /*
-         * Retrieves source code from the course repository.
+         * Retrieves the source code corresponding to the
+         * branch and revision selected by the Multibranch Pipeline.
          */
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/lmpnogueira/cogsi.git'
+                checkout scm
             }
         }
 
@@ -106,62 +104,60 @@ pipeline {
         }
 
         /*
-         * Main build stage.
-         * In multibranch mode, all branches can build.
+         * Compiles the application without running tests.
          */
         stage('Build') {
             steps {
-
                 dir("${PROJECT_DIR}") {
-
                     sh '''
-                        # Ensure Gradle wrapper is executable
                         chmod +x gradlew
-
-                        # Build application without tests initially
-                        ./gradlew clean build -x test
+                        ./gradlew clean classes
                     '''
                 }
             }
         }
 
         /*
-         * Demonstrates parallel execution.
-         * Branches should avoid conflicting writes.
+         * Demonstrates parallel execution of independent
+         * validation tasks.
          */
         stage('Parallel Validation') {
+
             parallel {
 
+                /*
+                 * Executes unit tests when TEST_ENABLED=true.
+                 */
                 stage('Unit Tests') {
 
-                    /*
-                     * Executes only if TEST_ENABLED=true
-                     */
                     when {
                         environment name: 'TEST_ENABLED', value: 'true'
                     }
 
                     steps {
-
                         dir("${PROJECT_DIR}") {
+                            sh './gradlew test'
+                        }
+                    }
 
-                            sh '''
-                                # Run unit tests
-                                ./gradlew test
-                            '''
+                    post {
+                        always {
+                            junit(
+                                testResults: "${PROJECT_DIR}/app/build/test-results/test/*.xml",
+                                allowEmptyResults: true
+                            )
                         }
                     }
                 }
 
-                stage('Static Analysis') {
+                /*
+                 * Checks the latest commit for whitespace errors.
+                 * This task is independent of the Gradle test execution.
+                 */
+                stage('Source Validation') {
                     steps {
-
                         dir("${PROJECT_DIR}") {
-
-                            sh '''
-                                # Example static validation placeholder
-                                ./gradlew check
-                            '''
+                            sh 'git show --format= --check HEAD'
                         }
                     }
                 }
@@ -169,75 +165,47 @@ pipeline {
         }
 
         /*
-         * Optional integration testing controlled by parameters.
+         * Generates application artifacts after validation.
          */
-        stage('Integration Tests') {
-
-            when {
-                expression { params.RUN_INTEGRATION_TESTS }
-            }
-
+        stage('Package') {
             steps {
-
                 dir("${PROJECT_DIR}") {
-
-                    sh '''
-                        # Placeholder for more advanced tests
-                        echo "Running integration tests..."
-                        ./gradlew test
-                    '''
+                    sh './gradlew assemble'
                 }
             }
         }
 
         /*
          * Branch-aware deployment logic.
-         * Demonstrates controlled environment promotion.
+         * These stages illustrate conditional execution.
+         * Actual deployment is outside the scope of this example.
          */
         stage('Deploy to Staging') {
 
             when {
-                branch 'develop'
+                branch 'development'
             }
 
             steps {
-                echo 'Deploying to staging environment...'
-
-                dir("${PROJECT_DIR}") {
-
-                    sh '''
-                        ./gradlew assemble
-                        echo "Staging deployment placeholder"
-                    '''
-                }
+                echo "Deploying branch ${env.BRANCH_NAME} to staging..."
+                echo 'Staging deployment placeholder.'
             }
         }
 
         stage('Deploy to Production') {
 
-            /*
-             * Production only from main.
-             * Future versions may add approvals or credentials.
-             */
             when {
                 branch 'main'
             }
 
             steps {
-                echo 'Deploying to production environment...'
-
-                dir("${PROJECT_DIR}") {
-
-                    sh '''
-                        ./gradlew assemble
-                        echo "Production deployment placeholder"
-                    '''
-                }
+                echo "Deploying branch ${env.BRANCH_NAME} to production..."
+                echo 'Production deployment placeholder.'
             }
         }
 
         /*
-         * Optional artifact retention.
+         * Archives generated artifacts when enabled.
          */
         stage('Archive') {
 
@@ -246,11 +214,9 @@ pipeline {
             }
 
             steps {
-
                 dir("${PROJECT_DIR}") {
-
                     archiveArtifacts(
-                        artifacts: 'app/build/distributions/*',
+                        artifacts: 'app/build/libs/*.jar, app/build/distributions/*',
                         fingerprint: true
                     )
                 }
